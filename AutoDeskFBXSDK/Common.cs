@@ -9,7 +9,7 @@
 
     class Common
     {
-        public static void InitializeSdkObjects(out FBXManager pManager, out FBXScene pScene)
+        public static void InitializeSdkObjects(string sceneName, out FBXManager pManager, out FBXScene pScene)
         {
             // The first thing to do is to create the FBX Manager which is the object allocator for almost all the classes in the SDK
             pManager = FBXManager.Create();
@@ -31,7 +31,7 @@
             pManager.LoadPluginsDirectory(Environment.CurrentDirectory, string.Empty);
 
             // Create an FBX scene. This object holds most objects imported/exported from/to files.
-            pScene = FBXScene.Create(pManager, "Scene");
+            pScene = FBXScene.Create(pManager, sceneName);
             if (pScene == null)
             {
                 Debug.WriteLine("Error: Unable to create FBX scene!\n");

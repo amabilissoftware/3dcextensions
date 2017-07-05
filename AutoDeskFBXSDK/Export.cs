@@ -11,6 +11,7 @@
 
     using ArcManagedFBX;
     using System.Diagnostics;
+    using ArcManagedFBX.Layers;
 
     public class Exporter
     {
@@ -26,11 +27,15 @@
 
         public void Export(string fileName, CSG sceneGraph, CSGGroup group)
         {
-            Common.InitializeSdkObjects(out FBXManager managerInstance, out FBXScene fbxScene);
+            Common.InitializeSdkObjects(group.Name, out FBXManager managerInstance, out FBXScene fbxScene);
+
+            FBXAnimStack myAnimStack = FBXAnimStack.Create(fbxScene, group.Name + " Animation Stack");
+            FBXAnimLayer myAnimBaseLayer = FBXAnimLayer.Create(fbxScene, "Layer0");
+            myAnimStack.AddMember(myAnimBaseLayer);
 
             var node = fbxScene.GetRootNode();
 
-            this.ExportGroupRecursively(group, fbxScene, node);
+            this.ExportGroupRecursively(group, fbxScene, node, myAnimBaseLayer);
 
             int fileFormat = -1;
             if (string.Equals(Path.GetExtension(fileName), ".fbx", StringComparison.InvariantCultureIgnoreCase))
@@ -58,7 +63,7 @@
             return transform;
         }
 
-        private void ExportGroupRecursively(CSGGroup group, FBXScene fbxScene, FBXNode sceneNode)
+        private void ExportGroupRecursively(CSGGroup group, FBXScene fbxScene, FBXNode sceneNode, FBXAnimLayer animationLayer)
         {
             string groupName = group.Name;
             if (string.IsNullOrWhiteSpace(groupName))
@@ -72,6 +77,9 @@
             sceneNode.AddChild(node);
 
             this.SetTransform(group, node);
+
+            FBXAnimCurveNode myTranslationAnimCurveNode = node.LclTranslationGetCurveNode(animationLayer);
+            FBXAnimCurveNode myRotationAnimCurveNode = node.LclRotationGetCurveNode(animationLayer);
 
             CSGShapeArray childShapeList = group.GetShapes();
             for (int shapeIndex = 0; shapeIndex < childShapeList.GetSize(); shapeIndex++)
@@ -94,7 +102,7 @@
             CSGGroupArray childGroupList = group.GetChildren();
             for (int groupIndex = 0; groupIndex < childGroupList.GetSize(); groupIndex++)
             {
-                this.ExportGroupRecursively(childGroupList.GetElement(groupIndex), fbxScene, node);
+                this.ExportGroupRecursively(childGroupList.GetElement(groupIndex), fbxScene, node, animationLayer);
             }
         }
 
@@ -290,7 +298,7 @@
             group.GetPosition(group.Parent, -1, ref position);
 
             position.Z *= -1;
-            node.SetLclTranslation(new FBXVector(position.X, position.Y, position.Z));
+            node.LclTranslationSet(new FBXVector(position.X, position.Y, position.Z));
 
             CSGMatrix transformLH = new CSGMatrix();
             group.GetTransform(group.Parent, -1, ref transformLH);
@@ -318,7 +326,7 @@
 
             FBXVector eulerXYZRH = fbxQuaternionRH.DecomposeSphericalXYZ();
 
-            node.SetLclRotation(new FBXVector(eulerXYZRH.x, eulerXYZRH.y, eulerXYZRH.z));
+            node.LclRotationSet(new FBXVector(eulerXYZRH.x, eulerXYZRH.y, eulerXYZRH.z));
         }
     }
 }
