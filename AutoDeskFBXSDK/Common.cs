@@ -5,6 +5,7 @@
 
     using ArcManagedFBX;
     using ArcManagedFBX.IO;
+    using System.IO;
 
     class Common
     {
@@ -203,6 +204,7 @@
             Debug.WriteLine("FBX file format version {0}.{1}.{2}", lMajor, lMinor, lRevision);
 
             // Export the scene.
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(pFilename));
             lStatus = lExporter.Export(pScene, false);
 
             // Destroy the exporter.

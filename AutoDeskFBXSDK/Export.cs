@@ -10,6 +10,7 @@
     using ACSG;
 
     using ArcManagedFBX;
+    using System.Diagnostics;
 
     public class Exporter
     {
@@ -60,7 +61,7 @@
         private void ExportGroupRecursively(CSGGroup group, FBXScene fbxScene, FBXNode sceneNode)
         {
             string groupName = group.Name;
-            if (!string.IsNullOrWhiteSpace(groupName))
+            if (string.IsNullOrWhiteSpace(groupName))
             {
                 groupName = "group";
             }
@@ -116,6 +117,7 @@
 
             var specular = material.get_Specular();
             fbxMaterial.SetSpecular(specular.r, specular.g, specular.b);
+            fbxMaterial.SetSpecularFactor(.1);
 
             fbxMaterial.SetShadingModel("Phong");
             fbxMaterial.SetShininess(0.0);
@@ -149,8 +151,8 @@
 
                         this.textureList.Add(fbxFileTexture);
 
-                        fbxMaterial.DiffuseConnectSrcObjectHelper(fbxFileTexture);
                     }
+                    fbxMaterial.DiffuseConnectSrcObjectHelper(this.textureList[textureId]);
                 }
             }
         }
@@ -210,7 +212,7 @@
                 }
 
                 string shapeName = shape.Name;
-                if (!string.IsNullOrWhiteSpace(shapeName))
+                if (string.IsNullOrWhiteSpace(shapeName))
                 {
                     shapeName = "shape";
                 }
@@ -234,6 +236,8 @@
 
                     FBXVector normal = new FBXVector(normalList[point.Y].X, normalList[point.Y].Y, -normalList[point.Y].Z);
                     fbxMesh.SetControlPointNormalAt(normal, id);
+
+                    ConvertTextureCoordinate(textureCoordinateList, point);
 
                     fbxMesh.AddTextureUV(new FBXVector2(textureCoordinateList[point.Z].U, textureCoordinateList[point.Z].V));
 
@@ -267,6 +271,17 @@
                     materialId++;
                 }
             }
+        }
+
+        private static void ConvertTextureCoordinate(CSGUV[] textureCoordinateList, CSGVectorLong point)
+        {
+            if (textureCoordinateList[point.Z].V > 1)
+            {
+                textureCoordinateList[point.Z].V *= -1;
+                textureCoordinateList[point.Z].V += 1;
+            }
+            textureCoordinateList[point.Z].V *= -1;
+            textureCoordinateList[point.Z].V += 1;
         }
 
         private void SetTransform(CSGGroup group, FBXNode node)
