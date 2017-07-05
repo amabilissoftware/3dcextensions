@@ -15,9 +15,9 @@
     {
         private readonly CHFGeneral helperFunctionsGeneral = new CHFGeneral();
 
-        private Dictionary<string, int> textureIdList = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> textureIdList = new Dictionary<string, int>();
 
-        private List<FBXTexture> textureList = new List<FBXTexture>();
+        private readonly List<FBXTexture> textureList = new List<FBXTexture>();
 
         private string[] uniqueNamesList = new string[0];
 
@@ -104,13 +104,21 @@
 
             FBXSurfacePhong fbxMaterial = FBXSurfacePhong.Create(fbxScene, materialName);
 
-            // Generate primary and secondary colors.
-            fbxMaterial.SetEmissive(0.0, 0.0, 0.0);
-            fbxMaterial.SetAmbient(1.0, 0.0, 0.0);
-            fbxMaterial.SetDiffuse(0.75, 0.75, 0.0);
-            fbxMaterial.SetTransparencyFactor(0.0);
+            var diffuse = material.get_Diffuse();
+            fbxMaterial.SetDiffuse(diffuse.r, diffuse.g, diffuse.b);
+            fbxMaterial.SetTransparencyFactor(diffuse.a);
+
+            var ambient = material.get_Ambient();
+            fbxMaterial.SetAmbient(ambient.r, ambient.g, ambient.b);
+
+            var emissive = material.get_Emissive();
+            fbxMaterial.SetEmissive(emissive.r, emissive.g, emissive.b);
+
+            var specular = material.get_Specular();
+            fbxMaterial.SetSpecular(specular.r, specular.g, specular.b);
+
             fbxMaterial.SetShadingModel("Phong");
-            fbxMaterial.SetShininess(0.5);
+            fbxMaterial.SetShininess(0.0);
 
             fbxNode.AddMaterial(fbxMaterial);
 
@@ -261,84 +269,6 @@
             }
         }
 
-        float[] Identity()
-        {
-            // var d = m || this.data;
-            float[] d = new float[15];
-            d[0] = 1;
-            d[4] = 0;
-            d[8] = 0;
-            d[12] = 0;
-            d[1] = 0;
-            d[5] = 1;
-            d[9] = 0;
-            d[13] = 0;
-            d[2] = 0;
-            d[6] = 0;
-            d[10] = 1;
-            d[14] = 0;
-            d[3] = 0;
-            d[7] = 0;
-            d[11] = 0;
-            d[15] = 1;
-            return d;
-        }
-
-        private float[] MatrixFromQuaternion(float tx, float ty, float tz, float qw, float qx, float qy, float qz, float sx, float sy, float sz, float m, bool f)
-        {
-            float[] d = this.Identity();
-            var sqx = qx * qx;
-            var sqy = qy * qy;
-            var sqz = qz * qz;
-
-            // fliping this part changes from left handed to right handed (I think)
-            if (f)
-            {
-                d[0] = (1 - 2 * sqy - 2 * sqz) * sx;
-                d[1] = (2 * qx * qy - 2 * qz * qw) * sx;
-                d[2] = (2 * qx * qz + 2 * qy * qw) * sx;
-                d[4] = (2 * qx * qy + 2 * qz * qw) * sy;
-                d[5] = (1 - 2 * sqx - 2 * sqz) * sy;
-                d[6] = (2 * qy * qz - 2 * qx * qw) * sy;
-                d[8] = (2 * qx * qz - 2 * qy * qw) * sz;
-                d[9] = (2 * qy * qz + 2 * qx * qw) * sz;
-                d[10] = (1 - 2 * sqx - 2 * sqy) * sz;
-            }
-            else
-            {
-                d[0] = (1 - 2 * sqy - 2 * sqz) * sx;
-                d[4] = (2 * qx * qy - 2 * qz * qw) * sx;
-                d[8] = (2 * qx * qz + 2 * qy * qw) * sx;
-                d[1] = (2 * qx * qy + 2 * qz * qw) * sy;
-                d[5] = (1 - 2 * sqx - 2 * sqz) * sy;
-                d[9] = (2 * qy * qz - 2 * qx * qw) * sy;
-                d[2] = (2 * qx * qz - 2 * qy * qw) * sz;
-                d[6] = (2 * qy * qz + 2 * qx * qw) * sz;
-                d[10] = (1 - 2 * sqx - 2 * sqy) * sz;
-            }
-
-            d[12] = tx;
-            d[13] = ty;
-            d[14] = tz;
-            return d;
-        }
-
-        // NOTE: the following code is NOT used - It is being kept as alternatives to some of the above functions if they are found to be lacking
-        private FBXVector Quaternion2Euler(double qx, double qy, double qz, double qw)
-        {
-            FBXVector result = this.ThreeAxisRot(
-                -2 * (qy * qz - qw * qx),
-                qw * qw - qx * qx - qy * qy + qz * qz,
-                2 * (qx * qz + qw * qy),
-                -2 * (qx * qy - qw * qz),
-                qw * qw + qx * qx - qy * qy - qz * qz);
-
-            result.x = result.x * 180 / Math.PI;
-            result.y = result.y * 180 / Math.PI;
-            result.z = result.z * 180 / Math.PI;
-            return result;
-        }
-
         private void SetTransform(CSGGroup group, FBXNode node)
         {
             CSGVector position = new CSGVector();
@@ -374,12 +304,6 @@
             FBXVector eulerXYZRH = fbxQuaternionRH.DecomposeSphericalXYZ();
 
             node.SetLclRotation(new FBXVector(eulerXYZRH.x, eulerXYZRH.y, eulerXYZRH.z));
-        }
-
-        private FBXVector ThreeAxisRot(double r11, double r12, double r21, double r31, double r32)
-        {
-            FBXVector result = new FBXVector() { x = Math.Atan2(r31, r32), y = Math.Asin(r21), z = Math.Atan2(r11, r12) };
-            return result;
         }
     }
 }
