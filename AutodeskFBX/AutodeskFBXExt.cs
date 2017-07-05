@@ -2,9 +2,9 @@
 {
     #region
 
-    using System.Windows.Forms;
-
     using ACSG;
+
+    using AutoDeskFBXSDK;
 
     using stdole;
 
@@ -18,8 +18,6 @@
     /// </summary>
     public class AutodeskFBXExt : PluginImportExport
     {
-        #region Public Properties
-
         /// <summary>
         ///   Gets the author of the plug-in.
         /// </summary>
@@ -108,37 +106,29 @@
             }
         }
 
-        #endregion
-
-        #region Public Methods and Operators
-
-
         public void Export(
-            string filename, 
-            CSGGroup group, 
-            CSG sceneGraph, 
-            CSGApplicationState applicationState, 
-            ref float[] userDataFloats, 
-            ref int[] userDataInts, 
+            string filename,
+            CSGGroup group,
+            CSG sceneGraph,
+            CSGApplicationState applicationState,
+            ref float[] userDataFloats,
+            ref int[] userDataInts,
             ref string userDataString)
         {
-            AutoDeskFBXSDK.Exporter exporter = new AutoDeskFBXSDK.Exporter();
+            Exporter exporter = new AutoDeskFBXSDK.Exporter();
             exporter.Export(filename, sceneGraph, group);
         }
 
-
         public void Import(
-            string importFileName, 
-            CSGGroup importGroup, 
-            CSG sceneGraph, 
-            CSGApplicationState applicationState, 
-            ref float[] userDataFloats, 
-            ref int[] userDataInts, 
+            string importFileName,
+            CSGGroup importGroup,
+            CSG sceneGraph,
+            CSGApplicationState applicationState,
+            ref float[] userDataFloats,
+            ref int[] userDataInts,
             ref string userDataString)
         {
             // if importing, set SupportImport to return true and add your import code
         }
-
-        #endregion
     }
 }

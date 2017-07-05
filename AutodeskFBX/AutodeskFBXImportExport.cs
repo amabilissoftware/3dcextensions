@@ -6,6 +6,7 @@
     using System.IO;
 
     using ACHF;
+
     using ACSG;
 
     #endregion
@@ -16,8 +17,6 @@
     /// </summary>
     public class AutodeskFBXImportExport
     {
-        #region Constants and Fields
-
         /// <summary>
         /// The unique group names list.
         /// </summary>
@@ -27,10 +26,6 @@
         /// The unique group names list count.
         /// </summary>
         private static int uniqueNamesListCount;
-
-        #endregion
-
-        #region Public Methods and Operators
 
         /// <summary>
         /// The Autodesk FBX export. 
@@ -61,11 +56,11 @@
 
                 // assemble the export (geometry and materials)
                 AssembleExport(
-                    exportGroup, 
-                    ref output, 
-                    ref outputMaterial, 
-                    ref shapeStartPointIndex, 
-                    ref shapeStartUVIndex, 
+                    exportGroup,
+                    ref output,
+                    ref outputMaterial,
+                    ref shapeStartPointIndex,
+                    ref shapeStartUVIndex,
                     ref shapeStartNormalIndex);
 
                 // write the geometry to file
@@ -75,9 +70,8 @@
                 }
 
                 // write the material library
-                using (
-                    StreamWriter outputMaterialFile =
-                        new StreamWriter(Path.GetDirectoryName(outputPath) + "\\" + materialFile))
+                using (StreamWriter outputMaterialFile =
+                    new StreamWriter(Path.GetDirectoryName(outputPath) + "\\" + materialFile))
                 {
                     outputMaterialFile.Write(outputMaterial);
                 }
@@ -87,10 +81,6 @@
                 throw;
             }
         }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Assemble the export.
@@ -114,11 +104,11 @@
         /// the index of the first normal output for the current shape
         /// </param>
         private static void AssembleExport(
-            CSGGroup exportGroup, 
-            ref string output, 
-            ref string outputMaterial, 
-            ref int shapeStartPointIndex, 
-            ref int shapeStartUVIndex, 
+            CSGGroup exportGroup,
+            ref string output,
+            ref string outputMaterial,
+            ref int shapeStartPointIndex,
+            ref int shapeStartUVIndex,
             ref int shapeStartNormalIndex)
         {
             try
@@ -128,11 +118,11 @@
                 for (int groupIndex = 0; groupIndex < childGroupList.GetSize(); groupIndex++)
                 {
                     AssembleExport(
-                        childGroupList.GetElement(groupIndex), 
-                        ref output, 
-                        ref outputMaterial, 
-                        ref shapeStartPointIndex, 
-                        ref shapeStartUVIndex, 
+                        childGroupList.GetElement(groupIndex),
+                        ref output,
+                        ref outputMaterial,
+                        ref shapeStartPointIndex,
+                        ref shapeStartUVIndex,
                         ref shapeStartNormalIndex);
                 }
 
@@ -141,11 +131,11 @@
                 for (int shapeIndex = 0; shapeIndex < childShapeList.GetSize(); shapeIndex++)
                 {
                     AssembleShape(
-                        childShapeList.GetElement(shapeIndex), 
-                        ref output, 
-                        ref outputMaterial, 
-                        ref shapeStartPointIndex, 
-                        ref shapeStartUVIndex, 
+                        childShapeList.GetElement(shapeIndex),
+                        ref output,
+                        ref outputMaterial,
+                        ref shapeStartPointIndex,
+                        ref shapeStartUVIndex,
                         ref shapeStartNormalIndex);
                 }
             }
@@ -177,11 +167,11 @@
         /// the index of the first normal output for the current shape
         /// </param>
         private static void AssembleShape(
-            CSGShape shape, 
-            ref string output, 
-            ref string outputMaterial, 
-            ref int shapeStartPointIndex, 
-            ref int shapeStartUVIndex, 
+            CSGShape shape,
+            ref string output,
+            ref string outputMaterial,
+            ref int shapeStartPointIndex,
+            ref int shapeStartUVIndex,
             ref int shapeStartNormalIndex)
         {
             try
@@ -218,16 +208,16 @@
 
                     // get the geometry sorted by material
                     shape.GetGeometryMaterialSorted(
-                        true, 
-                        false, 
-                        true, 
-                        ref pointList, 
-                        ref pointListCount, 
-                        ref normalList, 
-                        ref normalListCount, 
-                        ref uvList, 
-                        ref uvListCount, 
-                        ref materialFaceList, 
+                        true,
+                        false,
+                        true,
+                        ref pointList,
+                        ref pointListCount,
+                        ref normalList,
+                        ref normalListCount,
+                        ref uvList,
+                        ref uvListCount,
+                        ref materialFaceList,
                         ref materialFaceListCount);
 
                     // restore the shape local coordinates
@@ -236,11 +226,11 @@
                     AssembleShapePointList(pointList, pointListCount, helperFunctionsFormatting, ref output);
 
                     exportUVs = AssembleShapeUVList(
-                        uvList, 
-                        uvListCount, 
-                        materialFaceList, 
-                        materialFaceListCount, 
-                        helperFunctionsFormatting, 
+                        uvList,
+                        uvListCount,
+                        materialFaceList,
+                        materialFaceListCount,
+                        helperFunctionsFormatting,
                         ref output);
 
                     AssembleShapeNormalList(normalList, normalListCount, helperFunctionsFormatting, ref output);
@@ -253,17 +243,20 @@
                     {
                         // Assemble the material
                         AssembleShapeMaterial(
-                            materialFaceList[materialIndex].Material, shapeName, materialIndex, ref outputMaterial);
+                            materialFaceList[materialIndex].Material,
+                            shapeName,
+                            materialIndex,
+                            ref outputMaterial);
 
                         // indicate the material to use
                         output = output + "usemtl mat_" + shapeName + "_" + materialIndex.ToString() + "\r\n";
 
                         AssembleShapeFaceList(
-                            materialFaceList[materialIndex], 
-                            shapeStartPointIndex, 
-                            shapeStartUVIndex, 
-                            shapeStartNormalIndex, 
-                            exportUVs, 
+                            materialFaceList[materialIndex],
+                            shapeStartPointIndex,
+                            shapeStartUVIndex,
+                            shapeStartNormalIndex,
+                            exportUVs,
                             ref output);
                     }
 
@@ -304,11 +297,11 @@
         /// the assembled geometry to be exported.
         /// </param>
         private static void AssembleShapeFaceList(
-            CSGMaterialFaceList faceList, 
-            int shapeStartPointIndex, 
-            int shapeStartUVIndex, 
-            int shapeStartNormalIndex, 
-            bool exportUVs, 
+            CSGMaterialFaceList faceList,
+            int shapeStartPointIndex,
+            int shapeStartUVIndex,
+            int shapeStartNormalIndex,
+            bool exportUVs,
             ref string output)
         {
             for (int faceIndex = 0; faceIndex < faceList.FaceListCount; faceIndex++)
@@ -320,8 +313,8 @@
                 for (int pointIndex = faceList.FaceList[faceIndex].PointListCount - 1; pointIndex >= 0; pointIndex--)
                 {
                     // the point
-                    output = output + " "
-                             + (shapeStartPointIndex + faceList.FaceList[faceIndex].PointList[pointIndex].PointID + 1);
+                    output = output + " " + (shapeStartPointIndex
+                                             + faceList.FaceList[faceIndex].PointList[pointIndex].PointID + 1);
 
                     // the UV marker
                     output = output + "/";
@@ -329,15 +322,14 @@
                     // if there is a texture coordinate
                     if (exportUVs)
                     {
-                        output = output
-                                 +
-                                 (shapeStartUVIndex
-                                  + faceList.FaceList[faceIndex].PointList[pointIndex].TextureCoordinateListID[0] + 1);
+                        output = output + (shapeStartUVIndex
+                                           + faceList.FaceList[faceIndex].PointList[pointIndex]
+                                               .TextureCoordinateListID[0] + 1);
                     }
 
                     // the normal
-                    output = output + "/"
-                             + (shapeStartNormalIndex + faceList.FaceList[faceIndex].PointList[pointIndex].NormalID + 1);
+                    output = output + "/" + (shapeStartNormalIndex
+                                             + faceList.FaceList[faceIndex].PointList[pointIndex].NormalID + 1);
                 }
 
                 output = output + "\r\n";
@@ -360,7 +352,10 @@
         /// the assembled geometry to be exported.
         /// </param>
         private static void AssembleShapeMaterial(
-            CSGMaterial material, string shapeName, int materialIndex, ref string output)
+            CSGMaterial material,
+            string shapeName,
+            int materialIndex,
+            ref string output)
         {
             float colorRed = 0;
             float colorGreen = 0;
@@ -411,7 +406,10 @@
         /// the assembled geometry to be exported.
         /// </param>
         private static void AssembleShapeNormalList(
-            CSGVector[] normalList, int normalListCount, CHFFormatting helperFunctionsFormatting, ref string output)
+            CSGVector[] normalList,
+            int normalListCount,
+            CHFFormatting helperFunctionsFormatting,
+            ref string output)
         {
             // output the normals
             for (int normalIndex = 0; normalIndex < normalListCount; normalIndex++)
@@ -438,7 +436,10 @@
         /// the assembled geometry to be exported.
         /// </param>
         private static void AssembleShapePointList(
-            CSGVector[] pointList, int pointListCount, CHFFormatting helperFunctionsFormatting, ref string output)
+            CSGVector[] pointList,
+            int pointListCount,
+            CHFFormatting helperFunctionsFormatting,
+            ref string output)
         {
             // output the points
             for (int pointIndex = 0; pointIndex < pointListCount; pointIndex++)
@@ -474,11 +475,11 @@
         /// The Assemble shape uv list. 
         /// </returns>
         private static bool AssembleShapeUVList(
-            CSGUV[] uvList, 
-            int uvListCount, 
-            CSGMaterialFaceList[] materialFaceList, 
-            int materialFaceListCount, 
-            CHFFormatting helperFunctionsFormatting, 
+            CSGUV[] uvList,
+            int uvListCount,
+            CSGMaterialFaceList[] materialFaceList,
+            int materialFaceListCount,
+            CHFFormatting helperFunctionsFormatting,
             ref string output)
         {
             bool exportUVs = false;
@@ -508,7 +509,5 @@
 
             return exportUVs;
         }
-
-        #endregion
     }
 }

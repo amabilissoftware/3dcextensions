@@ -2,9 +2,9 @@
 {
     #region
 
-    using System.Windows.Forms;
-
     using ACSG;
+
+    using AutoDeskFBXSDK;
 
     using stdole;
 
@@ -18,8 +18,6 @@
     /// </summary>
     public class ColladaDAEExt : PluginImportExport
     {
-        #region Public Properties
-
         /// <summary>
         ///   Gets the author of the plug-in.
         /// </summary>
@@ -108,11 +106,6 @@
             }
         }
 
-        #endregion
-
-        #region Public Methods and Operators
-
-
         public void Export(
             string filename,
             CSGGroup group,
@@ -122,10 +115,9 @@
             ref int[] userDataInts,
             ref string userDataString)
         {
-            AutoDeskFBXSDK.Exporter exporter = new AutoDeskFBXSDK.Exporter();
+            Exporter exporter = new Exporter();
             exporter.Export(filename, sceneGraph, group);
         }
-
 
         public void Import(
             string importFileName,
@@ -138,7 +130,5 @@
         {
             // if importing, set SupportImport to return true and add your import code
         }
-
-        #endregion
     }
 }
