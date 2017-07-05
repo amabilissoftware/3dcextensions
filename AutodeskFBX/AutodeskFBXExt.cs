@@ -115,7 +115,7 @@
             ref int[] userDataInts,
             ref string userDataString)
         {
-            Exporter exporter = new AutoDeskFBXSDK.Exporter();
+            Exporter exporter = new Exporter();
             exporter.Export(filename, sceneGraph, group);
         }
 

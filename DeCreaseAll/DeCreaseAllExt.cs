@@ -68,13 +68,7 @@
             }
         }
 
-        public void Apply(
-            CSScene obsolete,
-            CSG sceneGraph,
-            int deviceId,
-            ref float[] userDataFloats,
-            ref int[] userDataInts,
-            ref string userDataString)
+        public void Apply(CSScene obsolete, CSG sceneGraph, int deviceId, ref float[] userDataFloats, ref int[] userDataInts, ref string userDataString)
         {
             int shapesCreasedCount = 0;
             this.CreaseGroupRecursively(sceneGraph.ApplicationState.Scene, ref shapesCreasedCount);
@@ -112,8 +106,7 @@
 
         private void CreaseShape(CSGShape shape, ref int shapesCreasedCount)
         {
-            if (shape.RepresentativeEntityType == CSGEntityType.CSGEShape
-                && shape.ShapeType == CSGShapeType.CSGShapeStandard && shape.GetFaceCount() > 0)
+            if (shape.RepresentativeEntityType == CSGEntityType.CSGEShape && shape.ShapeType == CSGShapeType.CSGShapeStandard && shape.GetFaceCount() > 0)
             {
                 shape.Crease2(180);
                 shapesCreasedCount++;

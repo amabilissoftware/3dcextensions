@@ -55,13 +55,7 @@
                 output = "mtllib " + materialFile + "\r\n";
 
                 // assemble the export (geometry and materials)
-                AssembleExport(
-                    exportGroup,
-                    ref output,
-                    ref outputMaterial,
-                    ref shapeStartPointIndex,
-                    ref shapeStartUVIndex,
-                    ref shapeStartNormalIndex);
+                AssembleExport(exportGroup, ref output, ref outputMaterial, ref shapeStartPointIndex, ref shapeStartUVIndex, ref shapeStartNormalIndex);
 
                 // write the geometry to file
                 using (StreamWriter outputFile = new StreamWriter(outputPath))
@@ -70,8 +64,7 @@
                 }
 
                 // write the material library
-                using (StreamWriter outputMaterialFile =
-                    new StreamWriter(Path.GetDirectoryName(outputPath) + "\\" + materialFile))
+                using (StreamWriter outputMaterialFile = new StreamWriter(Path.GetDirectoryName(outputPath) + "\\" + materialFile))
                 {
                     outputMaterialFile.Write(outputMaterial);
                 }
@@ -225,13 +218,7 @@
 
                     AssembleShapePointList(pointList, pointListCount, helperFunctionsFormatting, ref output);
 
-                    exportUVs = AssembleShapeUVList(
-                        uvList,
-                        uvListCount,
-                        materialFaceList,
-                        materialFaceListCount,
-                        helperFunctionsFormatting,
-                        ref output);
+                    exportUVs = AssembleShapeUVList(uvList, uvListCount, materialFaceList, materialFaceListCount, helperFunctionsFormatting, ref output);
 
                     AssembleShapeNormalList(normalList, normalListCount, helperFunctionsFormatting, ref output);
 
@@ -242,22 +229,12 @@
                     for (int materialIndex = 0; materialIndex < materialFaceListCount; materialIndex++)
                     {
                         // Assemble the material
-                        AssembleShapeMaterial(
-                            materialFaceList[materialIndex].Material,
-                            shapeName,
-                            materialIndex,
-                            ref outputMaterial);
+                        AssembleShapeMaterial(materialFaceList[materialIndex].Material, shapeName, materialIndex, ref outputMaterial);
 
                         // indicate the material to use
                         output = output + "usemtl mat_" + shapeName + "_" + materialIndex.ToString() + "\r\n";
 
-                        AssembleShapeFaceList(
-                            materialFaceList[materialIndex],
-                            shapeStartPointIndex,
-                            shapeStartUVIndex,
-                            shapeStartNormalIndex,
-                            exportUVs,
-                            ref output);
+                        AssembleShapeFaceList(materialFaceList[materialIndex], shapeStartPointIndex, shapeStartUVIndex, shapeStartNormalIndex, exportUVs, ref output);
                     }
 
                     shapeStartPointIndex = shapeStartPointIndex + pointListCount;
@@ -313,8 +290,7 @@
                 for (int pointIndex = faceList.FaceList[faceIndex].PointListCount - 1; pointIndex >= 0; pointIndex--)
                 {
                     // the point
-                    output = output + " " + (shapeStartPointIndex
-                                             + faceList.FaceList[faceIndex].PointList[pointIndex].PointID + 1);
+                    output = output + " " + (shapeStartPointIndex + faceList.FaceList[faceIndex].PointList[pointIndex].PointID + 1);
 
                     // the UV marker
                     output = output + "/";
@@ -322,14 +298,11 @@
                     // if there is a texture coordinate
                     if (exportUVs)
                     {
-                        output = output + (shapeStartUVIndex
-                                           + faceList.FaceList[faceIndex].PointList[pointIndex]
-                                               .TextureCoordinateListID[0] + 1);
+                        output = output + (shapeStartUVIndex + faceList.FaceList[faceIndex].PointList[pointIndex].TextureCoordinateListID[0] + 1);
                     }
 
                     // the normal
-                    output = output + "/" + (shapeStartNormalIndex
-                                             + faceList.FaceList[faceIndex].PointList[pointIndex].NormalID + 1);
+                    output = output + "/" + (shapeStartNormalIndex + faceList.FaceList[faceIndex].PointList[pointIndex].NormalID + 1);
                 }
 
                 output = output + "\r\n";
@@ -351,11 +324,7 @@
         /// <param name="output">
         /// the assembled geometry to be exported.
         /// </param>
-        private static void AssembleShapeMaterial(
-            CSGMaterial material,
-            string shapeName,
-            int materialIndex,
-            ref string output)
+        private static void AssembleShapeMaterial(CSGMaterial material, string shapeName, int materialIndex, ref string output)
         {
             float colorRed = 0;
             float colorGreen = 0;
@@ -366,18 +335,15 @@
             output = output + "newmtl mat_" + shapeName + "_" + materialIndex.ToString() + "\r\n";
 
             material.x_GetEmissive(ref colorRed, ref colorGreen, ref colorBlue);
-            output = output + "Ka " + helperFunctionsFormatting.FormatExport(colorRed) + " "
-                     + helperFunctionsFormatting.FormatExport(colorGreen) + " "
+            output = output + "Ka " + helperFunctionsFormatting.FormatExport(colorRed) + " " + helperFunctionsFormatting.FormatExport(colorGreen) + " "
                      + helperFunctionsFormatting.FormatExport(colorBlue) + "\r\n";
 
             material.x_GetColorRGBA(ref colorRed, ref colorGreen, ref colorBlue, ref colorAlpha);
-            output = output + "Kd " + helperFunctionsFormatting.FormatExport(colorRed) + " "
-                     + helperFunctionsFormatting.FormatExport(colorGreen) + " "
+            output = output + "Kd " + helperFunctionsFormatting.FormatExport(colorRed) + " " + helperFunctionsFormatting.FormatExport(colorGreen) + " "
                      + helperFunctionsFormatting.FormatExport(colorBlue) + "\r\n";
 
             material.x_GetSpecular(ref colorRed, ref colorGreen, ref colorBlue);
-            output = output + "Ks " + helperFunctionsFormatting.FormatExport(colorRed) + " "
-                     + helperFunctionsFormatting.FormatExport(colorGreen) + " "
+            output = output + "Ks " + helperFunctionsFormatting.FormatExport(colorRed) + " " + helperFunctionsFormatting.FormatExport(colorGreen) + " "
                      + helperFunctionsFormatting.FormatExport(colorBlue) + "\r\n";
 
             output = output + "illum 2" + "\r\n";
@@ -405,18 +371,13 @@
         /// <param name="output">
         /// the assembled geometry to be exported.
         /// </param>
-        private static void AssembleShapeNormalList(
-            CSGVector[] normalList,
-            int normalListCount,
-            CHFFormatting helperFunctionsFormatting,
-            ref string output)
+        private static void AssembleShapeNormalList(CSGVector[] normalList, int normalListCount, CHFFormatting helperFunctionsFormatting, ref string output)
         {
             // output the normals
             for (int normalIndex = 0; normalIndex < normalListCount; normalIndex++)
             {
                 output = output + "vn " + helperFunctionsFormatting.FormatExport(normalList[normalIndex].X) + " "
-                         + helperFunctionsFormatting.FormatExport(normalList[normalIndex].Z) + " "
-                         + helperFunctionsFormatting.FormatExport(normalList[normalIndex].Y) + "\r\n";
+                         + helperFunctionsFormatting.FormatExport(normalList[normalIndex].Z) + " " + helperFunctionsFormatting.FormatExport(normalList[normalIndex].Y) + "\r\n";
             }
         }
 
@@ -435,18 +396,13 @@
         /// <param name="output">
         /// the assembled geometry to be exported.
         /// </param>
-        private static void AssembleShapePointList(
-            CSGVector[] pointList,
-            int pointListCount,
-            CHFFormatting helperFunctionsFormatting,
-            ref string output)
+        private static void AssembleShapePointList(CSGVector[] pointList, int pointListCount, CHFFormatting helperFunctionsFormatting, ref string output)
         {
             // output the points
             for (int pointIndex = 0; pointIndex < pointListCount; pointIndex++)
             {
-                output = output + "v " + helperFunctionsFormatting.FormatExport(pointList[pointIndex].X) + " "
-                         + helperFunctionsFormatting.FormatExport(pointList[pointIndex].Z) + " "
-                         + helperFunctionsFormatting.FormatExport(pointList[pointIndex].Y) + "\r\n";
+                output = output + "v " + helperFunctionsFormatting.FormatExport(pointList[pointIndex].X) + " " + helperFunctionsFormatting.FormatExport(pointList[pointIndex].Z)
+                         + " " + helperFunctionsFormatting.FormatExport(pointList[pointIndex].Y) + "\r\n";
             }
         }
 
@@ -502,8 +458,7 @@
             {
                 for (int uvIndex = 0; uvIndex < uvListCount; uvIndex++)
                 {
-                    output = output + "vt " + helperFunctionsFormatting.FormatExport(uvList[uvIndex].U) + " "
-                             + helperFunctionsFormatting.FormatExport(-uvList[uvIndex].V) + "\r\n";
+                    output = output + "vt " + helperFunctionsFormatting.FormatExport(uvList[uvIndex].U) + " " + helperFunctionsFormatting.FormatExport(-uvList[uvIndex].V) + "\r\n";
                 }
             }
 

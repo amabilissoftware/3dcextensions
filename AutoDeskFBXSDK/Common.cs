@@ -48,9 +48,6 @@
             int lSDKRevision = 0;
 
             // int lFileFormat = -1;
-            int i;
-            int lAnimStackCount;
-            bool lStatus;
             string lPassword = new string(new char[1024]);
 
             // Get the file version number generate by the FBX SDK.
@@ -77,11 +74,7 @@
                 return false;
             }
 
-            Debug.WriteLine(
-                "FBX file format version for this FBX SDK is {0}.{1}.{2}",
-                lSDKMajor,
-                lSDKMinor,
-                lSDKRevision);
+            Debug.WriteLine("FBX file format version for this FBX SDK is {0}.{1}.{2}", lSDKMajor, lSDKMinor, lSDKRevision);
 
             if (lImporter.IsFBX())
             {
@@ -91,11 +84,12 @@
                 // the expense of loading the entire file.
                 Debug.WriteLine("Animation Stack Information");
 
-                lAnimStackCount = lImporter.GetAnimStackCount();
+                var lAnimStackCount = lImporter.GetAnimStackCount();
 
                 Debug.WriteLine("    Number of Animation Stacks: {0}", lAnimStackCount);
                 Debug.WriteLine("    Current Animation Stack: {0}", lImporter.GetActiveAnimStackName());
 
+                int i;
                 for (i = 0; i < lAnimStackCount; i++)
                 {
                     // FbxTakeInfo lTakeInfo = lImporter.GetTakeInfo(i);
@@ -126,7 +120,7 @@
             }
 
             // Import the scene.
-            lStatus = lImporter.Import(pScene);
+            var lStatus = lImporter.Import(pScene);
 
             // if (lStatus == false && lImporter.GetStatus().GetCode() == FbxStatus.ePasswordError)
             // {
@@ -150,12 +144,7 @@
             return lStatus;
         }
 
-        public static bool SaveScene(
-            FBXManager pManager,
-            FBXDocument pScene,
-            string pFilename,
-            int pFileFormat = -1,
-            bool pEmbedMedia = false)
+        public static bool SaveScene(FBXManager pManager, FBXDocument pScene, string pFilename, int pFileFormat = -1, bool pEmbedMedia = false)
         {
             int lMajor = 0;
             int lMinor = 0;

@@ -13,7 +13,7 @@
 
     public class Exporter
     {
-        private CHFGeneral helperFunctionsGeneral = new CHFGeneral();
+        private readonly CHFGeneral helperFunctionsGeneral = new CHFGeneral();
 
         private Dictionary<string, int> textureIdList = new Dictionary<string, int>();
 
@@ -21,7 +21,7 @@
 
         private string[] uniqueNamesList = new string[0];
 
-        private int uniqueNamesListCount = 0;
+        private int uniqueNamesListCount;
 
         public void Export(string fileName, CSG sceneGraph, CSGGroup group)
         {
@@ -52,8 +52,7 @@
             // will come out just fine when the meshes are locally mirrored as well
             transform.m31 *= -1;
             transform.m32 *= -1;
-            transform.m33 *=
-                -1; // NOTE: this is inverted twice. Not sure why, but if there is a bug, this is probably it.
+            transform.m33 *= -1; // NOTE: this is inverted twice. Not sure why, but if there is a bug, this is probably it.
             transform.m34 *= -1;
             return transform;
         }
@@ -66,10 +65,7 @@
                 groupName = "group";
             }
 
-            this.helperFunctionsGeneral.MakeNameUnique(
-                ref groupName,
-                ref this.uniqueNamesList,
-                ref this.uniqueNamesListCount);
+            this.helperFunctionsGeneral.MakeNameUnique(ref groupName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
 
             var node = FBXNode.Create(sceneNode, groupName);
             sceneNode.AddChild(node);
@@ -85,10 +81,7 @@
                 if (shapeIndex > 0)
                 {
                     string subGroupName = groupName + "_" + shapeIndex.ToString();
-                    this.helperFunctionsGeneral.MakeNameUnique(
-                        ref subGroupName,
-                        ref this.uniqueNamesList,
-                        ref this.uniqueNamesListCount);
+                    this.helperFunctionsGeneral.MakeNameUnique(ref subGroupName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
                     subnode = FBXNode.Create(sceneNode, subGroupName);
                     node.AddChild(subnode);
                 }
@@ -107,10 +100,7 @@
         private void ExportMaterial(FBXScene fbxScene, FBXNode fbxNode, CSGMaterial material)
         {
             string materialName = "material";
-            this.helperFunctionsGeneral.MakeNameUnique(
-                ref materialName,
-                ref this.uniqueNamesList,
-                ref this.uniqueNamesListCount);
+            this.helperFunctionsGeneral.MakeNameUnique(ref materialName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
 
             FBXSurfacePhong fbxMaterial = FBXSurfacePhong.Create(fbxScene, materialName);
 
@@ -124,12 +114,12 @@
 
             fbxNode.AddMaterial(fbxMaterial);
 
-            int textureId = -1;
             if (material.Texture != null)
             {
                 var textureFileName = Path.GetFileName(material.Texture.TextureName);
                 if (!string.IsNullOrWhiteSpace(textureFileName))
                 {
+                    var textureId = -1;
                     if (!this.textureIdList.TryGetValue(textureFileName, out textureId))
                     {
                         textureId = this.textureIdList.Count();
@@ -137,10 +127,7 @@
                         this.textureIdList.Add(textureFileName, textureId);
 
                         string textureName = Path.GetFileNameWithoutExtension(textureFileName);
-                        this.helperFunctionsGeneral.MakeNameUnique(
-                            ref textureName,
-                            ref this.uniqueNamesList,
-                            ref this.uniqueNamesListCount);
+                        this.helperFunctionsGeneral.MakeNameUnique(ref textureName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
 
                         FBXFileTexture fbxFileTexture = FBXFileTexture.Create(fbxScene, textureName);
                         fbxFileTexture.SetFileName(textureFileName);
@@ -162,8 +149,7 @@
 
         private void ExportShape(FBXScene fbxScene, FBXNode parentNode, CSGShape shape)
         {
-            if (shape.RepresentativeEntityType == CSGEntityType.CSGEShape
-                && shape.ShapeType == CSGShapeType.CSGShapeStandard && shape.GetFaceCount() > 0)
+            if (shape.RepresentativeEntityType == CSGEntityType.CSGEShape && shape.ShapeType == CSGShapeType.CSGShapeStandard && shape.GetFaceCount() > 0)
             {
                 Dictionary<long, int> fbxPointIdList = new Dictionary<long, int>();
                 List<CSGVectorLong> fbxPointList = new List<CSGVectorLong>();
@@ -196,8 +182,7 @@
                     {
                         foreach (var facePoint in face.PointList)
                         {
-                            long fbxPointKey = facePoint.PointID << 42 | facePoint.NormalID << 21
-                                               | facePoint.TextureCoordinateListID[0];
+                            long fbxPointKey = facePoint.PointID << 42 | facePoint.NormalID << 21 | facePoint.TextureCoordinateListID[0];
                             CSGVectorLong fbxPoint;
                             if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
                             {
@@ -205,12 +190,7 @@
                             }
                             else
                             {
-                                fbxPoint = new CSGVectorLong()
-                                               {
-                                                   X = facePoint.PointID,
-                                                   Y = facePoint.NormalID,
-                                                   Z = facePoint.TextureCoordinateListID[0]
-                                               };
+                                fbxPoint = new CSGVectorLong() { X = facePoint.PointID, Y = facePoint.NormalID, Z = facePoint.TextureCoordinateListID[0] };
                                 fbxPointId = fbxPointList.Count();
 
                                 fbxPointList.Add(fbxPoint);
@@ -227,10 +207,7 @@
                     shapeName = "shape";
                 }
 
-                this.helperFunctionsGeneral.MakeNameUnique(
-                    ref shapeName,
-                    ref this.uniqueNamesList,
-                    ref this.uniqueNamesListCount);
+                this.helperFunctionsGeneral.MakeNameUnique(ref shapeName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
 
                 FBXMesh fbxMesh = FBXMesh.Create(fbxScene, shapeName);
                 parentNode.AddNodeAttribute(fbxMesh);
@@ -244,22 +221,13 @@
                 int id = 0;
                 foreach (var point in fbxPointList)
                 {
-                    FBXVector controlPoint = new FBXVector(
-                        (double)pointList[point.X].X,
-                        (double)pointList[point.X].Y,
-                        -(double)pointList[point.X].Z);
+                    FBXVector controlPoint = new FBXVector(pointList[point.X].X, pointList[point.X].Y, -pointList[point.X].Z);
                     fbxMesh.SetControlPointAt(controlPoint, id);
 
-                    FBXVector normal = new FBXVector(
-                        (double)normalList[point.Y].X,
-                        (double)normalList[point.Y].Y,
-                        -(double)normalList[point.Y].Z);
+                    FBXVector normal = new FBXVector(normalList[point.Y].X, normalList[point.Y].Y, -normalList[point.Y].Z);
                     fbxMesh.SetControlPointNormalAt(normal, id);
 
-                    fbxMesh.AddTextureUV(
-                        new FBXVector2(
-                            (double)textureCoordinateList[point.Z].U,
-                            (double)textureCoordinateList[point.Z].V));
+                    fbxMesh.AddTextureUV(new FBXVector2(textureCoordinateList[point.Z].U, textureCoordinateList[point.Z].V));
 
                     id++;
                 }
@@ -272,8 +240,7 @@
                         fbxMesh.BeginPolygon(materialId, -1, -1, true);
                         foreach (var facePoint in face.PointList.Reverse())
                         {
-                            long fbxPointKey = facePoint.PointID << 42 | facePoint.NormalID << 21
-                                               | facePoint.TextureCoordinateListID[0];
+                            long fbxPointKey = facePoint.PointID << 42 | facePoint.NormalID << 21 | facePoint.TextureCoordinateListID[0];
                             if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
                             {
                                 fbxMesh.AddPolygon(fbxPointId, fbxPointId);
@@ -317,19 +284,7 @@
             return d;
         }
 
-        private float[] MatrixFromQuaternion(
-            float tx,
-            float ty,
-            float tz,
-            float qw,
-            float qx,
-            float qy,
-            float qz,
-            float sx,
-            float sy,
-            float sz,
-            float m,
-            bool f)
+        private float[] MatrixFromQuaternion(float tx, float ty, float tz, float qw, float qx, float qy, float qz, float sx, float sy, float sz, float m, bool f)
         {
             float[] d = this.Identity();
             var sqx = qx * qx;
@@ -423,8 +378,7 @@
 
         private FBXVector ThreeAxisRot(double r11, double r12, double r21, double r31, double r32)
         {
-            FBXVector result =
-                new FBXVector() { x = Math.Atan2(r31, r32), y = Math.Asin(r21), z = Math.Atan2(r11, r12) };
+            FBXVector result = new FBXVector() { x = Math.Atan2(r31, r32), y = Math.Asin(r21), z = Math.Atan2(r11, r12) };
             return result;
         }
     }
