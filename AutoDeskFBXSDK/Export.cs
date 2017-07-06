@@ -111,21 +111,46 @@
                 {
                     if (animationKey.Type == CSGAnimationKeyType.CSGAnimationPositionKey)
                     {
-                        myTranXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.X);
-                        myTranYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.Y);
-                        myTranZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, -animationKey.V.Z);
+                        myTranXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.X, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
+                        myTranYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.Y, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
+                        myTranZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, -animationKey.V.Z, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
                     }
-
                 }
 
                 myTranXCurve.KeyModifyEnd();
                 myTranYCurve.KeyModifyEnd();
                 myTranZCurve.KeyModifyEnd();
             }
-            //if (rotationAnimationKeyCount > 1)
-            //{
-            //    FBXAnimCurveNode myRotationAnimCurveNode = node.LclRotationGetCurveNode(animationLayer);
-            //}
+
+            if (rotationAnimationKeyCount > 1)
+            {
+                FBXAnimCurveNode myRotationAnimCurveNode = node.LclRotationGetCurveNode(animationLayer);
+
+                FBXAnimCurve myRotXCurve = node.LclRotationGetCurve(animationLayer, "X");
+                FBXAnimCurve myRotYCurve = node.LclRotationGetCurve(animationLayer, "Y");
+                FBXAnimCurve myRotZCurve = node.LclRotationGetCurve(animationLayer, "Z");
+
+                myRotXCurve.KeyModifyBegin();
+                myRotYCurve.KeyModifyBegin();
+                myRotZCurve.KeyModifyBegin();
+
+                foreach (var animationKey in animationKeyList)
+                {
+                    if (animationKey.Type == CSGAnimationKeyType.CSGAnimationOrientationKey)
+                    {
+                        FBXVector eulerXYZ = this.GetEulerXYZ(group, animationKey.Time);
+                        //Debug.WriteLine(string.Format("(0):{1},{2},{3}", animationKey.Time, eulerXYZ.x, eulerXYZ.y, eulerXYZ.z));
+                        myRotXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.x, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
+                        myRotYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.y, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
+                        myRotZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.z, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
+                    }
+
+                }
+
+                myRotXCurve.KeyModifyEnd();
+                myRotYCurve.KeyModifyEnd();
+                myRotZCurve.KeyModifyEnd();
+            }
 
             CSGShapeArray childShapeList = group.GetShapes();
             for (int shapeIndex = 0; shapeIndex < childShapeList.GetSize(); shapeIndex++)
@@ -346,8 +371,17 @@
             position.Z *= -1;
             node.LclTranslationSet(new FBXVector(position.X, position.Y, position.Z));
 
+            FBXVector eulerXYZRH = GetEulerXYZ(group, -1);
+
+            node.LclRotationSet(new FBXVector(eulerXYZRH.x, eulerXYZRH.y, eulerXYZRH.z));
+        }
+
+        private FBXVector GetEulerXYZ(CSGGroup group, float time)
+        {
+            FBXVector eulerXYZRH;
+
             CSGMatrix transformLH = new CSGMatrix();
-            group.GetTransform(group.Parent, -1, ref transformLH);
+            group.GetTransform(group.Parent, time, ref transformLH);
 
             var transformRH = ConvertTransformToRightHanded_ThisLittleBitTookFourDaysToFigureOut(transformLH);
 
@@ -370,9 +404,8 @@
                 transformRH.m44);
             FBXQuaternion fbxQuaternionRH = matrix.GetQuaternion();
 
-            FBXVector eulerXYZRH = fbxQuaternionRH.DecomposeSphericalXYZ();
-
-            node.LclRotationSet(new FBXVector(eulerXYZRH.x, eulerXYZRH.y, eulerXYZRH.z));
+            eulerXYZRH = fbxQuaternionRH.DecomposeSphericalXYZ();
+            return eulerXYZRH;
         }
     }
 }
