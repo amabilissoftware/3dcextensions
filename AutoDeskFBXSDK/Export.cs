@@ -35,7 +35,7 @@
 
             var node = fbxScene.GetRootNode();
 
-            this.ExportGroupRecursively(group, fbxScene, node, myAnimBaseLayer);
+            this.ExportGroupRecursively(group, fbxScene, node, myAnimBaseLayer, sceneGraph.ApplicationState.SettingAnimationKeyFramesPerSecond);
 
             int fileFormat = -1;
             if (string.Equals(Path.GetExtension(fileName), ".fbx", StringComparison.InvariantCultureIgnoreCase))
@@ -63,7 +63,7 @@
             return transform;
         }
 
-        private void ExportGroupRecursively(CSGGroup group, FBXScene fbxScene, FBXNode sceneNode, FBXAnimLayer animationLayer)
+        private void ExportGroupRecursively(CSGGroup group, FBXScene fbxScene, FBXNode sceneNode, FBXAnimLayer animationLayer, float keyFramesPerSecond)
         {
             string groupName = group.Name;
             if (string.IsNullOrWhiteSpace(groupName))
@@ -78,8 +78,54 @@
 
             this.SetTransform(group, node);
 
-            FBXAnimCurveNode myTranslationAnimCurveNode = node.LclTranslationGetCurveNode(animationLayer);
-            FBXAnimCurveNode myRotationAnimCurveNode = node.LclRotationGetCurveNode(animationLayer);
+            CSGAnimationKey[] animationKeyList = null;
+            int keyListCount = 0;
+            group.GetAnimationKeys(0, 999999, ref animationKeyList, ref keyListCount);
+            int translationAnimationKeyCount = 0;
+            int rotationAnimationKeyCount = 0;
+            foreach (var animationKey in animationKeyList)
+            {
+                if (animationKey.Type == CSGAnimationKeyType.CSGAnimationPositionKey)
+                {
+                    translationAnimationKeyCount++;
+                }
+                if (animationKey.Type == CSGAnimationKeyType.CSGAnimationOrientationKey)
+                {
+                    rotationAnimationKeyCount++;
+                }
+            }
+
+            if (translationAnimationKeyCount > 1)
+            {
+                FBXAnimCurveNode myTranslationAnimCurveNode = node.LclTranslationGetCurveNode(animationLayer);
+
+                FBXAnimCurve myTranXCurve = node.LclTranslationGetCurve(animationLayer, "X");
+                FBXAnimCurve myTranYCurve = node.LclTranslationGetCurve(animationLayer, "Y");
+                FBXAnimCurve myTranZCurve = node.LclTranslationGetCurve(animationLayer, "Z");
+
+                myTranXCurve.KeyModifyBegin();
+                myTranYCurve.KeyModifyBegin();
+                myTranZCurve.KeyModifyBegin();
+
+                foreach (var animationKey in animationKeyList)
+                {
+                    if (animationKey.Type == CSGAnimationKeyType.CSGAnimationPositionKey)
+                    {
+                        myTranXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.X);
+                        myTranYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.Y);
+                        myTranZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, -animationKey.V.Z);
+                    }
+
+                }
+
+                myTranXCurve.KeyModifyEnd();
+                myTranYCurve.KeyModifyEnd();
+                myTranZCurve.KeyModifyEnd();
+            }
+            //if (rotationAnimationKeyCount > 1)
+            //{
+            //    FBXAnimCurveNode myRotationAnimCurveNode = node.LclRotationGetCurveNode(animationLayer);
+            //}
 
             CSGShapeArray childShapeList = group.GetShapes();
             for (int shapeIndex = 0; shapeIndex < childShapeList.GetSize(); shapeIndex++)
@@ -102,7 +148,7 @@
             CSGGroupArray childGroupList = group.GetChildren();
             for (int groupIndex = 0; groupIndex < childGroupList.GetSize(); groupIndex++)
             {
-                this.ExportGroupRecursively(childGroupList.GetElement(groupIndex), fbxScene, node, animationLayer);
+                this.ExportGroupRecursively(childGroupList.GetElement(groupIndex), fbxScene, node, animationLayer, keyFramesPerSecond);
             }
         }
 
