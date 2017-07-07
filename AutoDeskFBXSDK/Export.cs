@@ -111,9 +111,9 @@
                 {
                     if (animationKey.Type == CSGAnimationKeyType.CSGAnimationPositionKey)
                     {
-                        myTranXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.X, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
-                        myTranYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.Y, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
-                        myTranZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, -animationKey.V.Z, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
+                        myTranXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.X); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
+                        myTranYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.Y); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
+                        myTranZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, -animationKey.V.Z); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
                     }
                 }
 
@@ -140,9 +140,9 @@
                     {
                         FBXVector eulerXYZ = this.GetEulerXYZ(group, animationKey.Time);
                         //Debug.WriteLine(string.Format("(0):{1},{2},{3}", animationKey.Time, eulerXYZ.x, eulerXYZ.y, eulerXYZ.z));
-                        myRotXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.x, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
-                        myRotYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.y, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
-                        myRotZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.z, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
+                        myRotXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.x); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
+                        myRotYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.y); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
+                        myRotZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.z); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
                     }
 
                 }
