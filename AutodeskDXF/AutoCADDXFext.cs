@@ -21,90 +21,42 @@
         /// <summary>
         ///   Gets the author of the plug-in.
         /// </summary>
-        public string Author
-        {
-            get
-            {
-                return "Amabilis Software";
-            }
-        }
+        public string Author => "Amabilis Software";
 
         /// <summary>
         ///   Gets cost of this plug-in. (Should always be CSGFunctionFree or some people won't be able to use your extension)
         /// </summary>
-        public CSGFunctionCost Cost
-        {
-            get
-            {
-                return CSGFunctionCost.CSGFunctionFree;
-            }
-        }
+        public CSGFunctionCost Cost => CSGFunctionCost.CSGFunctionFree;
 
         /// <summary>
         ///   Gets file type exported by this plug-in.
         /// </summary>
-        public string FileType
-        {
-            get
-            {
-                return "dxf";
-            }
-        }
+        public string FileType => "dxf";
 
         /// <summary>
         ///   Gets the description of the file type exported by this plug-in.
         /// </summary>
-        public string FileTypeDescription
-        {
-            get
-            {
-                return "AutoCAD DXF (Downloaded Extension)";
-            }
-        }
+        public string FileTypeDescription => "AutoCAD DXF (Downloaded Extension)";
 
         /// <summary>
         ///   Gets the plug-in Icon. (currently not supported)
         /// </summary>
-        public StdPicture Icon
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public StdPicture Icon => null;
 
         /// <summary>
         ///   Gets the class of plug-ins that this plug-in belongs to.  This will place it in the right menu location.
         /// </summary>
-        public CSGPluginImportExportClass PluginClass
-        {
-            get
-            {
-                return CSGPluginImportExportClass.CSGPluginImportExportUnclassified;
-            }
-        }
+        public CSGPluginImportExportClass PluginClass => CSGPluginImportExportClass.CSGPluginImportExportUnclassified;
 
         /// <summary>
         ///   Gets a value indicating whether exports are supported.
         /// </summary>
-        public bool SupportExport
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool SupportExport => true;
 
         /// <summary>
         ///   Gets a value indicating whether imports are supported.
         /// </summary>
-        public bool SupportImport
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool SupportImport => false;
 
         public void Export(
             string filename,

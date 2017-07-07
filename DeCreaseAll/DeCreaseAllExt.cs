@@ -15,58 +15,28 @@
         /// <summary>
         ///   Gets the author of the plug-in.
         /// </summary>
-        public string Author
-        {
-            get
-            {
-                return "Amabilis Software";
-            }
-        }
+        public string Author => "Amabilis Software";
 
         /// <summary>
         ///   Gets cost of this plug-in. (Should always be CSGFunctionFree or some people won't be able to use your extension)
         /// </summary>
-        public CSGFunctionCost Cost
-        {
-            get
-            {
-                return CSGFunctionCost.CSGFunctionFree;
-            }
-        }
+        public CSGFunctionCost Cost => CSGFunctionCost.CSGFunctionFree;
 
         /// <summary>
         ///   Gets the plug-in Icon. (currently not supported)
         /// </summary>
-        public StdPicture Icon
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public StdPicture Icon => null;
 
         /// <summary>
         ///   Gets the name of the plug-in. This will show up in a menu.
         /// </summary>
         /// 
-        public string Name
-        {
-            get
-            {
-                return "De-Crease All (Downloaded Extension)";
-            }
-        }
+        public string Name => "De-Crease All (Downloaded Extension)";
 
         /// <summary>
         ///   Gets the class of plug-ins that this plug-in belongs to. This will place it in the right menu location.
         /// </summary>
-        public CSGPluginClass PluginClass
-        {
-            get
-            {
-                return CSGPluginClass.CSGPluginUnclassified;
-            }
-        }
+        public CSGPluginClass PluginClass => CSGPluginClass.CSGPluginUnclassified;
 
         public void Apply(CSScene obsolete, CSG sceneGraph, int deviceId, ref float[] userDataFloats, ref int[] userDataInts, ref string userDataString)
         {
