@@ -2,10 +2,13 @@
 {
     using System;
     using System.Diagnostics;
+    using System.IO;
 
     using ArcManagedFBX;
     using ArcManagedFBX.IO;
-    using System.IO;
+
+    // this is converted from the Autodesk SDK
+    // there are lots of items commented out. I'll either be uncommenting the soon, or removing them completely
 
     class Common
     {

@@ -10,7 +10,6 @@
     using ACSG;
 
     using ArcManagedFBX;
-    using System.Diagnostics;
     using ArcManagedFBX.Layers;
 
     public class Exporter
@@ -46,6 +45,18 @@
             Common.SaveScene(managerInstance, fbxScene, fileName, fileFormat);
         }
 
+        private static void ConvertTextureCoordinate(CSGUV[] textureCoordinateList, CSGVectorLong point)
+        {
+            if (textureCoordinateList[point.Z].V > 1)
+            {
+                textureCoordinateList[point.Z].V *= -1;
+                textureCoordinateList[point.Z].V += 1;
+            }
+
+            textureCoordinateList[point.Z].V *= -1;
+            textureCoordinateList[point.Z].V += 1;
+        }
+
         private static CSGMatrix ConvertTransformToRightHanded_ThisLittleBitTookFourDaysToFigureOut(CSGMatrix transform)
         {
             // mirror each base vector's z component
@@ -63,58 +74,6 @@
             return transform;
         }
 
-        private void ExportGroupRecursively(CSGGroup group, FBXScene fbxScene, FBXNode parentNode, FBXAnimLayer animationLayer, float keyFramesPerSecond)
-        {
-            string groupName = GetUniqueName(group.Name, "group");
-
-            var node = FBXNode.Create(parentNode, groupName);
-            parentNode.AddChild(node);
-
-            this.SetTransform(group, node);
-
-            this.ExportGroupAnimation(group, animationLayer, keyFramesPerSecond, node);
-
-            this.ExportGroupShapes(group, fbxScene, parentNode, groupName, node);
-
-            CSGGroupArray childGroupList = group.GetChildren();
-            for (int groupIndex = 0; groupIndex < childGroupList.GetSize(); groupIndex++)
-            {
-                this.ExportGroupRecursively(childGroupList.GetElement(groupIndex), fbxScene, node, animationLayer, keyFramesPerSecond);
-            }
-        }
-
-        private string GetUniqueName(string name, string defaultName)
-        {
-            string uniqueName = name;
-            if (string.IsNullOrWhiteSpace(uniqueName))
-            {
-                uniqueName = defaultName;
-            }
-            this.helperFunctionsGeneral.MakeNameUnique(ref uniqueName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
-            return uniqueName;
-        }
-
-        private void ExportGroupShapes(CSGGroup group, FBXScene fbxScene, FBXNode sceneNode, string groupName, FBXNode node)
-        {
-            CSGShapeArray childShapeList = group.GetShapes();
-            for (int shapeIndex = 0; shapeIndex < childShapeList.GetSize(); shapeIndex++)
-            {
-                // this little bit of weirdness is due to View3D and Paint3D not being able to have multiple shapes on the same node
-                // there may need to be an export option for this at some point
-                var subnode = node;
-                if (shapeIndex > 0)
-                {
-                    string subGroupName = this.GetUniqueName(groupName + "_" + shapeIndex.ToString(), "group");
-
-                    subnode = FBXNode.Create(sceneNode, subGroupName);
-                    node.AddChild(subnode);
-                }
-
-                this.ExportShape(fbxScene, subnode, childShapeList.GetElement(shapeIndex));
-                subnode.SetShadingMode(ArcManagedFBX.Types.EShadingMode.eTextureShading);
-            }
-        }
-
         private void ExportGroupAnimation(CSGGroup group, FBXAnimLayer animationLayer, float keyFramesPerSecond, FBXNode node)
         {
             CSGAnimationKey[] animationKeyList = null;
@@ -128,6 +87,7 @@
                 {
                     translationAnimationKeyCount++;
                 }
+
                 if (animationKey.Type == CSGAnimationKeyType.CSGAnimationOrientationKey)
                 {
                     rotationAnimationKeyCount++;
@@ -150,9 +110,9 @@
                 {
                     if (animationKey.Type == CSGAnimationKeyType.CSGAnimationPositionKey)
                     {
-                        myTranXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.X); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
-                        myTranYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.Y); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
-                        myTranZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, -animationKey.V.Z); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
+                        myTranXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.X); // , ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
+                        myTranYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, animationKey.V.Y); // , ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
+                        myTranZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, -animationKey.V.Z); // , ArcManagedFBX.Types.EInterpolationType.eInterpolationConstant);
                     }
                 }
 
@@ -178,17 +138,58 @@
                     if (animationKey.Type == CSGAnimationKeyType.CSGAnimationOrientationKey)
                     {
                         FBXVector eulerXYZ = this.GetEulerXYZ(group, animationKey.Time);
-                        //Debug.WriteLine(string.Format("(0):{1},{2},{3}", animationKey.Time, eulerXYZ.x, eulerXYZ.y, eulerXYZ.z));
-                        myRotXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.x); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
-                        myRotYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.y); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
-                        myRotZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.z); //, ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
-                    }
 
+                        // Debug.WriteLine(string.Format("(0):{1},{2},{3}", animationKey.Time, eulerXYZ.x, eulerXYZ.y, eulerXYZ.z));
+                        myRotXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.x); // , ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
+                        myRotYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.y); // , ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
+                        myRotZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.z); // , ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
+                    }
                 }
 
                 myRotXCurve.KeyModifyEnd();
                 myRotYCurve.KeyModifyEnd();
                 myRotZCurve.KeyModifyEnd();
+            }
+        }
+
+        private void ExportGroupRecursively(CSGGroup group, FBXScene fbxScene, FBXNode parentNode, FBXAnimLayer animationLayer, float keyFramesPerSecond)
+        {
+            string groupName = this.GetUniqueName(group.Name, "group");
+
+            var node = FBXNode.Create(parentNode, groupName);
+            parentNode.AddChild(node);
+
+            this.SetTransform(group, node);
+
+            this.ExportGroupAnimation(group, animationLayer, keyFramesPerSecond, node);
+
+            this.ExportGroupShapes(group, fbxScene, parentNode, groupName, node);
+
+            CSGGroupArray childGroupList = group.GetChildren();
+            for (int groupIndex = 0; groupIndex < childGroupList.GetSize(); groupIndex++)
+            {
+                this.ExportGroupRecursively(childGroupList.GetElement(groupIndex), fbxScene, node, animationLayer, keyFramesPerSecond);
+            }
+        }
+
+        private void ExportGroupShapes(CSGGroup group, FBXScene fbxScene, FBXNode sceneNode, string groupName, FBXNode node)
+        {
+            CSGShapeArray childShapeList = group.GetShapes();
+            for (int shapeIndex = 0; shapeIndex < childShapeList.GetSize(); shapeIndex++)
+            {
+                // this little bit of weirdness is due to View3D and Paint3D not being able to have multiple shapes on the same node
+                // there may need to be an export option for this at some point
+                var subnode = node;
+                if (shapeIndex > 0)
+                {
+                    string subGroupName = this.GetUniqueName(groupName + "_" + shapeIndex.ToString(), "group");
+
+                    subnode = FBXNode.Create(sceneNode, subGroupName);
+                    node.AddChild(subnode);
+                }
+
+                this.ExportShape(fbxScene, subnode, childShapeList.GetElement(shapeIndex));
+                subnode.SetShadingMode(ArcManagedFBX.Types.EShadingMode.eTextureShading);
             }
         }
 
@@ -242,8 +243,8 @@
                         fbxFileTexture.SetRotation(0.0, 0.0);
 
                         this.textureList.Add(fbxFileTexture);
-
                     }
+
                     fbxMaterial.DiffuseConnectSrcObjectHelper(this.textureList[textureId]);
                 }
             }
@@ -359,30 +360,6 @@
             }
         }
 
-        private static void ConvertTextureCoordinate(CSGUV[] textureCoordinateList, CSGVectorLong point)
-        {
-            if (textureCoordinateList[point.Z].V > 1)
-            {
-                textureCoordinateList[point.Z].V *= -1;
-                textureCoordinateList[point.Z].V += 1;
-            }
-            textureCoordinateList[point.Z].V *= -1;
-            textureCoordinateList[point.Z].V += 1;
-        }
-
-        private void SetTransform(CSGGroup group, FBXNode node)
-        {
-            CSGVector position = new CSGVector();
-            group.GetPosition(group.Parent, -1, ref position);
-
-            position.Z *= -1;
-            node.LclTranslationSet(new FBXVector(position.X, position.Y, position.Z));
-
-            FBXVector eulerXYZRH = GetEulerXYZ(group, -1);
-
-            node.LclRotationSet(new FBXVector(eulerXYZRH.x, eulerXYZRH.y, eulerXYZRH.z));
-        }
-
         private FBXVector GetEulerXYZ(CSGGroup group, float time)
         {
             FBXVector eulerXYZRH;
@@ -413,6 +390,31 @@
 
             eulerXYZRH = fbxQuaternionRH.DecomposeSphericalXYZ();
             return eulerXYZRH;
+        }
+
+        private string GetUniqueName(string name, string defaultName)
+        {
+            string uniqueName = name;
+            if (string.IsNullOrWhiteSpace(uniqueName))
+            {
+                uniqueName = defaultName;
+            }
+
+            this.helperFunctionsGeneral.MakeNameUnique(ref uniqueName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
+            return uniqueName;
+        }
+
+        private void SetTransform(CSGGroup group, FBXNode node)
+        {
+            CSGVector position = new CSGVector();
+            group.GetPosition(group.Parent, -1, ref position);
+
+            position.Z *= -1;
+            node.LclTranslationSet(new FBXVector(position.X, position.Y, position.Z));
+
+            FBXVector eulerXYZRH = this.GetEulerXYZ(group, -1);
+
+            node.LclRotationSet(new FBXVector(eulerXYZRH.x, eulerXYZRH.y, eulerXYZRH.z));
         }
     }
 }
