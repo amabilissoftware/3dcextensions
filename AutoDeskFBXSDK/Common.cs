@@ -44,18 +44,15 @@
 
         public static bool LoadScene(FBXManager pManager, FBXDocument pScene, string pFilename)
         {
-            // int lFileMajor;
-            // int lFileMinor;
-            // int lFileRevision;
-            int lSDKMajor = 0;
-            int lSDKMinor = 0;
-            int lSDKRevision = 0;
+            int sdkMajor = 0;
+            int sdkMinor = 0;
+            int sdkRevision = 0;
 
             // int lFileFormat = -1;
             string lPassword = new string(new char[1024]);
 
             // Get the file version number generate by the FBX SDK.
-            FBXManager.GetFileFormatVersion(ref lSDKMajor, ref lSDKMinor, ref lSDKRevision);
+            FBXManager.GetFileFormatVersion(ref sdkMajor, ref sdkMinor, ref sdkRevision);
 
             // Create an importer.
             FBXImporter lImporter = FBXImporter.Create(pManager, string.Empty);
@@ -78,7 +75,7 @@
                 return false;
             }
 
-            Debug.WriteLine("FBX file format version for this FBX SDK is {0}.{1}.{2}", lSDKMajor, lSDKMinor, lSDKRevision);
+            Debug.WriteLine("FBX file format version for this FBX SDK is {0}.{1}.{2}", sdkMajor, sdkMinor, sdkRevision);
 
             if (lImporter.IsFBX())
             {

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
 
@@ -139,7 +140,6 @@
                     {
                         FBXVector eulerXYZ = this.GetEulerXYZ(group, animationKey.Time);
 
-                        // Debug.WriteLine(string.Format("(0):{1},{2},{3}", animationKey.Time, eulerXYZ.x, eulerXYZ.y, eulerXYZ.z));
                         myRotXCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.x); // , ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
                         myRotYCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.y); // , ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
                         myRotZCurve.KeyAddSet(animationKey.Time / keyFramesPerSecond, (float)eulerXYZ.z); // , ArcManagedFBX.Types.EInterpolationType.eInterpolationLinear);
@@ -223,10 +223,10 @@
                 var textureFileName = Path.GetFileName(material.Texture.TextureName);
                 if (!string.IsNullOrWhiteSpace(textureFileName))
                 {
-                    var textureId = -1;
+                    int textureId;
                     if (!this.textureIdList.TryGetValue(textureFileName, out textureId))
                     {
-                        textureId = this.textureIdList.Count();
+                        textureId = this.textureIdList.Count;
 
                         this.textureIdList.Add(textureFileName, textureId);
 
@@ -294,7 +294,7 @@
                             else
                             {
                                 fbxPoint = new CSGVectorLong() { X = facePoint.PointID, Y = facePoint.NormalID, Z = facePoint.TextureCoordinateListID[0] };
-                                fbxPointId = fbxPointList.Count();
+                                fbxPointId = fbxPointList.Count;
 
                                 fbxPointList.Add(fbxPoint);
 
@@ -347,7 +347,7 @@
                             else
                             {
                                 // should never happen
-                                Console.WriteLine("what to do for the impossible?");
+                                Debug.WriteLine("what to do for the impossible?");
                                 fbxMesh.AddPolygon(0, 0);
                             }
                         }
@@ -362,8 +362,6 @@
 
         private FBXVector GetEulerXYZ(CSGGroup group, float time)
         {
-            FBXVector eulerXYZRH;
-
             CSGMatrix transformLH = new CSGMatrix();
             group.GetTransform(group.Parent, time, ref transformLH);
 
@@ -388,7 +386,7 @@
                 transformRH.m44);
             FBXQuaternion fbxQuaternionRH = matrix.GetQuaternion();
 
-            eulerXYZRH = fbxQuaternionRH.DecomposeSphericalXYZ();
+            var eulerXYZRH = fbxQuaternionRH.DecomposeSphericalXYZ();
             return eulerXYZRH;
         }
 
