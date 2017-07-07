@@ -63,21 +63,60 @@
             return transform;
         }
 
-        private void ExportGroupRecursively(CSGGroup group, FBXScene fbxScene, FBXNode sceneNode, FBXAnimLayer animationLayer, float keyFramesPerSecond)
+        private void ExportGroupRecursively(CSGGroup group, FBXScene fbxScene, FBXNode parentNode, FBXAnimLayer animationLayer, float keyFramesPerSecond)
         {
-            string groupName = group.Name;
-            if (string.IsNullOrWhiteSpace(groupName))
-            {
-                groupName = "group";
-            }
+            string groupName = GetUniqueName(group.Name, "group");
 
-            this.helperFunctionsGeneral.MakeNameUnique(ref groupName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
-
-            var node = FBXNode.Create(sceneNode, groupName);
-            sceneNode.AddChild(node);
+            var node = FBXNode.Create(parentNode, groupName);
+            parentNode.AddChild(node);
 
             this.SetTransform(group, node);
 
+            this.ExportGroupAnimation(group, animationLayer, keyFramesPerSecond, node);
+
+            this.ExportGroupShapes(group, fbxScene, parentNode, groupName, node);
+
+            CSGGroupArray childGroupList = group.GetChildren();
+            for (int groupIndex = 0; groupIndex < childGroupList.GetSize(); groupIndex++)
+            {
+                this.ExportGroupRecursively(childGroupList.GetElement(groupIndex), fbxScene, node, animationLayer, keyFramesPerSecond);
+            }
+        }
+
+        private string GetUniqueName(string name, string defaultName)
+        {
+            string uniqueName = name;
+            if (string.IsNullOrWhiteSpace(uniqueName))
+            {
+                uniqueName = defaultName;
+            }
+            this.helperFunctionsGeneral.MakeNameUnique(ref uniqueName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
+            return uniqueName;
+        }
+
+        private void ExportGroupShapes(CSGGroup group, FBXScene fbxScene, FBXNode sceneNode, string groupName, FBXNode node)
+        {
+            CSGShapeArray childShapeList = group.GetShapes();
+            for (int shapeIndex = 0; shapeIndex < childShapeList.GetSize(); shapeIndex++)
+            {
+                // this little bit of weirdness is due to View3D and Paint3D not being able to have multiple shapes on the same node
+                // there may need to be an export option for this at some point
+                var subnode = node;
+                if (shapeIndex > 0)
+                {
+                    string subGroupName = this.GetUniqueName(groupName + "_" + shapeIndex.ToString(), "group");
+
+                    subnode = FBXNode.Create(sceneNode, subGroupName);
+                    node.AddChild(subnode);
+                }
+
+                this.ExportShape(fbxScene, subnode, childShapeList.GetElement(shapeIndex));
+                subnode.SetShadingMode(ArcManagedFBX.Types.EShadingMode.eTextureShading);
+            }
+        }
+
+        private void ExportGroupAnimation(CSGGroup group, FBXAnimLayer animationLayer, float keyFramesPerSecond, FBXNode node)
+        {
             CSGAnimationKey[] animationKeyList = null;
             int keyListCount = 0;
             group.GetAnimationKeys(0, 999999, ref animationKeyList, ref keyListCount);
@@ -151,36 +190,11 @@
                 myRotYCurve.KeyModifyEnd();
                 myRotZCurve.KeyModifyEnd();
             }
-
-            CSGShapeArray childShapeList = group.GetShapes();
-            for (int shapeIndex = 0; shapeIndex < childShapeList.GetSize(); shapeIndex++)
-            {
-                // this little bit of weirdness is due to View3D and Paint3D not being able to have multiple shapes on the same node
-                // there may need to be an export option for this at some point
-                var subnode = node;
-                if (shapeIndex > 0)
-                {
-                    string subGroupName = groupName + "_" + shapeIndex.ToString();
-                    this.helperFunctionsGeneral.MakeNameUnique(ref subGroupName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
-                    subnode = FBXNode.Create(sceneNode, subGroupName);
-                    node.AddChild(subnode);
-                }
-
-                this.ExportShape(fbxScene, subnode, childShapeList.GetElement(shapeIndex));
-                subnode.SetShadingMode(ArcManagedFBX.Types.EShadingMode.eTextureShading);
-            }
-
-            CSGGroupArray childGroupList = group.GetChildren();
-            for (int groupIndex = 0; groupIndex < childGroupList.GetSize(); groupIndex++)
-            {
-                this.ExportGroupRecursively(childGroupList.GetElement(groupIndex), fbxScene, node, animationLayer, keyFramesPerSecond);
-            }
         }
 
         private void ExportMaterial(FBXScene fbxScene, FBXNode fbxNode, CSGMaterial material)
         {
-            string materialName = "material";
-            this.helperFunctionsGeneral.MakeNameUnique(ref materialName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
+            string materialName = this.GetUniqueName("material", "material");
 
             FBXSurfacePhong fbxMaterial = FBXSurfacePhong.Create(fbxScene, materialName);
 
@@ -215,8 +229,7 @@
 
                         this.textureIdList.Add(textureFileName, textureId);
 
-                        string textureName = Path.GetFileNameWithoutExtension(textureFileName);
-                        this.helperFunctionsGeneral.MakeNameUnique(ref textureName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
+                        string textureName = this.GetUniqueName(Path.GetFileNameWithoutExtension(textureFileName), "texture");
 
                         FBXFileTexture fbxFileTexture = FBXFileTexture.Create(fbxScene, textureName);
                         fbxFileTexture.SetFileName(textureFileName);
@@ -290,13 +303,7 @@
                     }
                 }
 
-                string shapeName = shape.Name;
-                if (string.IsNullOrWhiteSpace(shapeName))
-                {
-                    shapeName = "shape";
-                }
-
-                this.helperFunctionsGeneral.MakeNameUnique(ref shapeName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
+                string shapeName = this.GetUniqueName(shape.Name, "shape");
 
                 FBXMesh fbxMesh = FBXMesh.Create(fbxScene, shapeName);
                 parentNode.AddNodeAttribute(fbxMesh);
