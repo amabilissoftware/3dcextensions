@@ -223,8 +223,7 @@
                 var textureFileName = Path.GetFileName(material.Texture.TextureName);
                 if (!string.IsNullOrWhiteSpace(textureFileName))
                 {
-                    int textureId;
-                    if (!this.textureIdList.TryGetValue(textureFileName, out textureId))
+                    if (!this.textureIdList.TryGetValue(textureFileName, out int textureId))
                     {
                         textureId = this.textureIdList.Count;
 
