@@ -1,0 +1,5 @@
+;!@Install@!UTF-8!
+Title="3DCrafter 9.5 Extensions"
+BeginPrompt="Do you want to install the 3DCrafter 9.5 Extensions?"
+RunProgram="setup.exe"
+;!@InstallEnd@!

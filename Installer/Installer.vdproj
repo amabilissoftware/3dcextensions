@@ -249,6 +249,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_DE84704FD3C04B669CE04049A3D7699B"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_E94F43E650284606B5F2A9DE78B2D485"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -961,6 +967,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_DE84704FD3C04B669CE04049A3D7699B"
+            {
+            "SourcePath" = "8:..\\3DCrafter.ico"
+            "TargetName" = "8:3DCrafter.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_4029522EF6EB48AAB5B83D615451949B"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_E94F43E650284606B5F2A9DE78B2D485"
             {
             "AssemblyRegister" = "3:2"
@@ -1099,15 +1125,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Extensions"
-        "ProductCode" = "8:{92D93436-0785-49FC-B278-2800C7ED67BC}"
-        "PackageCode" = "8:{129669B7-6620-4B0F-9A22-340570121BEC}"
+        "ProductCode" = "8:{C80D5F20-AA0E-4427-B66E-54AC8F699A85}"
+        "PackageCode" = "8:{9248ABBD-CF14-46DC-9607-635223C6A568}"
         "UpgradeCode" = "8:{039FC609-0B19-4618-AA06-36073CB4C212}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.0"
+        "ProductVersion" = "8:9.5.0"
         "Manufacturer" = "8:3DCrafter 9.5"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -1117,7 +1143,7 @@
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:Extensions for 3DC"
         "ARPURLINFOABOUT" = "8:http://amabilis.com/"
-        "ARPPRODUCTICON" = "8:"
+        "ARPPRODUCTICON" = "8:_DE84704FD3C04B669CE04049A3D7699B"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
