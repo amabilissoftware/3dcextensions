@@ -1,3 +1,3 @@
-1 Open a command prompt
-2) cd to this folder
-3) type: copy /b 7zS2.sfx + config.txt + Release.7z 3DCrafter95Extensions.exe
+1) Right-Click on 3DCExtensions.msi and setup.exe and choose "7-Zip > Add to archive..." (use the defaults)
+2) Copy the created archive (Release.7z) here
+3) Double-click "MakeSelfExtrator.bat"
