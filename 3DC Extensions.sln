@@ -1,21 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.15
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutodeskFBX_9", "AutoDeskFBX_9\AutodeskFBX_9.csproj", "{1F31F357-4C87-4B72-8D73-70C7729268C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutodeskFBX", "AutoDeskFBX\AutodeskFBX.csproj", "{1F31F357-4C87-4B72-8D73-70C7729268C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoDeskFBXSDK_9", "AutoDeskFBXSDK_9\AutoDeskFBXSDK_9.csproj", "{16D7F94C-A778-45EC-8F72-E301D385ACE3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoDeskFBXSDK", "AutoDeskFBXSDK\AutoDeskFBXSDK.csproj", "{16D7F94C-A778-45EC-8F72-E301D385ACE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeCreaseAll_9", "DeCreaseAll_9\DeCreaseAll_9.csproj", "{EF8054D7-4104-4CD4-B013-AC02CE57AA6F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeCreaseAll", "DeCreaseAll\DeCreaseAll.csproj", "{EF8054D7-4104-4CD4-B013-AC02CE57AA6F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AliasOBJ_9", "AliasOBJ_9\AliasOBJ_9.csproj", "{83AB1439-0386-492B-B629-F5CD2398B9FB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AliasOBJ", "AliasOBJ\AliasOBJ.csproj", "{83AB1439-0386-492B-B629-F5CD2398B9FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColladaDAE_9", "ColladaDAE_9\ColladaDAE_9.csproj", "{FE18B619-7A24-4541-ADEB-06097F14E820}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColladaDAE", "ColladaDAE\ColladaDAE.csproj", "{FE18B619-7A24-4541-ADEB-06097F14E820}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoCADDXF_9", "AutodeskDXF_9\AutoCADDXF_9.csproj", "{76EF8E21-BE53-45DF-878F-8F60BCD315B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoCADDXF", "AutodeskDXF\AutoCADDXF.csproj", "{76EF8E21-BE53-45DF-878F-8F60BCD315B0}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Installer", "Installer_9\Installer.vdproj", "{16B8BEA4-C437-4DD3-95D0-EE79B06D3354}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Installer", "Installer\Installer.vdproj", "{16B8BEA4-C437-4DD3-95D0-EE79B06D3354}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
