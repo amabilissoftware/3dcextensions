@@ -220,7 +220,11 @@
 
             if (material.Texture != null)
             {
+#if IS_3DC9
                 var textureFileName = Path.GetFileName(material.Texture.TextureName);
+#else
+                var textureFileName = Path.GetFileName(material.Texture.Texture0Name);
+#endif
                 if (!string.IsNullOrWhiteSpace(textureFileName))
                 {
                     if (!this.textureIdList.TryGetValue(textureFileName, out int textureId))

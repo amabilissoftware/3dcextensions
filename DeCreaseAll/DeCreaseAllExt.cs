@@ -1,4 +1,4 @@
-﻿namespace TDCPlugin95
+﻿namespace TDCPlugin10
 {
     using System.Windows.Forms;
 
