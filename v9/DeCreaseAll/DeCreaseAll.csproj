@@ -56,19 +56,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Interop.ACHF">
-      <HintPath>..\...\..\..\3DC COM\3DC\Interop.ACHF.dll</HintPath>
+      <HintPath>..\..\..\..\3DC COM\3DC\Interop.ACHF.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Interop.ACSG">
-      <HintPath>..\...\..\..\3DC COM\3DC\Interop.ACSG.dll</HintPath>
+      <HintPath>..\..\..\..\3DC COM\3DC\Interop.ACSG.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Interop.TDCPlugin">
-      <HintPath>..\...\..\..\3DC COM\3DC\Interop.TDCPlugin.dll</HintPath>
+      <HintPath>..\..\..\..\3DC COM\3DC\Interop.TDCPlugin.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Interop.TDCScripting">
-      <HintPath>..\...\..\..\3DC COM\3DC\Interop.TDCScripting.dll</HintPath>
+      <HintPath>..\..\..\..\3DC COM\3DC\Interop.TDCScripting.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -85,6 +85,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\DeCreaseAll\DeCreaseAll.cs">
+      <Link>DeCreaseAll.cs</Link>
+    </Compile>
     <Compile Include="DeCreaseAllExt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

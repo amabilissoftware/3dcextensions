@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;IS_3DC9</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -27,7 +27,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\..\..\..\3DCrafter 9.5\Extensions\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;IS_3DC9</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
@@ -52,20 +52,20 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ArcManagedFBX, Version=1.0.6391.14550, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="ArcManagedFBX, Version=1.0.6399.10148, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\ArcManagedFBX.dll</HintPath>
+      <HintPath>..\..\AutoDeskFBXSDK\ArcManagedFBX.dll</HintPath>
     </Reference>
-    <Reference Include="ArcManagedFBX.Shared, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="ArcManagedFBX.Shared, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\ArcManagedFBX.Shared.dll</HintPath>
+      <HintPath>..\..\AutoDeskFBXSDK\ArcManagedFBX.Shared.dll</HintPath>
     </Reference>
     <Reference Include="Interop.ACHF">
-      <HintPath>..\...\..\..\3DC COM\3DC\Interop.ACHF.dll</HintPath>
+      <HintPath>..\..\..\..\3DC COM\3DC\Interop.ACHF.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Interop.ACSG">
-      <HintPath>..\...\..\..\3DC COM\3DC\Interop.ACSG.dll</HintPath>
+      <HintPath>..\..\..\..\3DC COM\3DC\Interop.ACSG.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -82,18 +82,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common.cs" />
-    <Compile Include="Export.cs" />
-    <Compile Include="Import.cs" />
+    <Compile Include="..\..\AutoDeskFBXSDK\Common.cs">
+      <Link>Common.cs</Link>
+    </Compile>
+    <Compile Include="..\..\AutoDeskFBXSDK\Export.cs">
+      <Link>Export.cs</Link>
+    </Compile>
+    <Compile Include="..\..\AutoDeskFBXSDK\Import.cs">
+      <Link>Import.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="ArcManagedFBX.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ArcManagedFBX.Shared.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -85,6 +85,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeCreaseAll.cs" />
     <Compile Include="DeCreaseAllExt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
