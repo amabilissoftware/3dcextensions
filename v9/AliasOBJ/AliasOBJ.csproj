@@ -54,20 +54,21 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Interop.ACHF">
-      <HintPath>..\..\..\..\3DC COM\3DC\Interop.ACHF.dll</HintPath>
+    <Reference Include="Interop.ACHF, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\Interop.ACHF.dll</HintPath>
     </Reference>
     <Reference Include="Interop.ACSG">
-      <HintPath>..\..\..\..\3DC COM\3DC\Interop.ACSG.dll</HintPath>
+      <HintPath>..\Interop.ACSG.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Interop.TDCPlugin">
-      <HintPath>..\..\..\..\3DC COM\3DC\Interop.TDCPlugin.dll</HintPath>
+      <HintPath>..\Interop.TDCPlugin.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

@@ -55,19 +55,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Interop.ACHF">
-      <HintPath>..\..\..\Amabilis\3DC X\3DC CTL\Interop.ACHF.dll</HintPath>
+      <HintPath>..\Interop.ACHF.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Interop.ACSG">
-      <HintPath>..\..\..\Amabilis\3DC X\3DC CTL\Interop.ACSG.dll</HintPath>
+      <HintPath>..\Interop.ACSG.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Interop.TDCPlugin">
-      <HintPath>..\..\..\Amabilis\3DC X\3DC CTL\Interop.TDCPlugin.dll</HintPath>
+      <HintPath>..\Interop.TDCPlugin.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
