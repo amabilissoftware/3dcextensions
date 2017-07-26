@@ -5,7 +5,13 @@
     [Serializable]
     public class ExecuteData
     {
-        #region Public Properties
+        public int[] faceColorList { get; set; }
+
+        public int[] faceColorList2 { get; set; }
+
+        public int faceColorList2Count { get; set; }
+
+        public int faceColorListCount { get; set; }
 
         public int[] FaceData { get; set; }
 
@@ -39,16 +45,6 @@
 
         public int TextureCoordinateListCount { get; set; }
 
-        public int[] faceColorList { get; set; }
-
-        public int[] faceColorList2 { get; set; }
-
-        public int faceColorList2Count { get; set; }
-
-        public int faceColorListCount { get; set; }
-
         public CBODataTypes.CSGToolOperation udtOperation { get; set; }
-
-        #endregion
     }
 }

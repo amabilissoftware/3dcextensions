@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CreateShapeUnion")]
+[assembly: AssemblyTitle("Bend")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CreateShapeUnion")]
+[assembly: AssemblyProduct("Bend")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(true)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("fbecb257-952a-4a7f-8b3f-96ea4dd823a6")]
+[assembly: Guid("7afa1561-a0dd-4dec-98fb-692fdf22c008")]
 
 // Version information for an assembly consists of the following four values:
 //      Major Version

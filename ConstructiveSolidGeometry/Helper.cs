@@ -1,4 +1,5 @@
 //using UpgradeHelpers.Helpers;
+
 namespace ACBO
 {
     using System;
@@ -7,127 +8,54 @@ namespace ACBO
 
     internal static class Helper
     {
-        #region Constants
-
         public const float CSG_sLargeEpsilon = 100000000000000f;
 
         public const float CSG_sSmallEpsilon = 0.0001f;
-
-        #endregion
-
-        // *********************************************************************************
-        // Purpose:
-        // Parameters:
-        // *********************************************************************************
-        #region Methods
-
-        internal static void GetFacet(Vector3[] cvaFace, int lFacet, Vector3[] cvaFacet)
-        {
-            // get first vertex of facet
-            // exception for the first facet since the first vertex of the facet is the last
-            // vertex of the polygon
-            if (lFacet == 0)
-            {
-                cvaFacet[0] = cvaFace[cvaFace.GetUpperBound(0)];
-            }
-            else
-            {
-                // normal
-                cvaFacet[0] = cvaFace[lFacet - 1];
-            }
-
-            // get second vertex of facet
-            cvaFacet[1] = cvaFace[lFacet];
-
-            // get final vertex
-            // exception for final vertex since the final vertex of the facet is the
-            // first vertex of the polygon
-            if (lFacet == cvaFace.GetUpperBound(0))
-            {
-                cvaFacet[2] = cvaFace[0];
-            }
-            else
-            {
-                cvaFacet[2] = cvaFace[lFacet + 1];
-            }
-        }
-
-        internal static void GetFacet2(int[] laPolygon, int lFacet, int[] laFacet)
-        {
-            // get first vertex of facet
-            // exception for the first facet since the first vertex of the facet is the last
-            // vertex of the polygon
-            if (lFacet == 0)
-            {
-                laFacet[0] = laPolygon[laPolygon.GetUpperBound(0)];
-            }
-            else
-            {
-                // normal
-                laFacet[0] = laPolygon[lFacet - 1];
-            }
-
-            // get second vertex of facet
-            laFacet[1] = laPolygon[lFacet];
-
-            // get final vertex
-            // exception for final vertex since the final vertex of the facet is the
-            // first vertex of the polygon
-            if (lFacet == laPolygon.GetUpperBound(0))
-            {
-                laFacet[2] = laPolygon[0];
-            }
-            else
-            {
-                laFacet[2] = laPolygon[lFacet + 1];
-            }
-        }
 
         //// *********************************************************************************
         //// Purpose:
         //// Parameters:
         //// *********************************************************************************
-        //internal static void VectorCrossProduct(
-        //    ref CBODataTypes.CSGVector Result, 
-        //    CBODataTypes.CSGVector Vector1, 
-        //    CBODataTypes.CSGVector Vector2)
-        //{
-        //    var vector3_1 = new Vector3(Vector1.X, Vector1.Y, Vector1.Z);
-        //    var vector3_2 = new Vector3(Vector2.X, Vector2.Y, Vector2.Z);
+        // internal static void VectorCrossProduct(
+        // ref CBODataTypes.CSGVector Result, 
+        // CBODataTypes.CSGVector Vector1, 
+        // CBODataTypes.CSGVector Vector2)
+        // {
+        // var vector3_1 = new Vector3(Vector1.X, Vector1.Y, Vector1.Z);
+        // var vector3_2 = new Vector3(Vector2.X, Vector2.Y, Vector2.Z);
 
-        //    var result3 = Vector3.Cross(vector3_1, vector3_2);
+        // var result3 = Vector3.Cross(vector3_1, vector3_2);
 
-        //    Result.X = result3.X;
-        //    Result.Y = result3.Y;
-        //    Result.Z = result3.Z;
-        //}
+        // Result.X = result3.X;
+        // Result.Y = result3.Y;
+        // Result.Z = result3.Z;
+        // }
 
-        //internal static float VectorDotProduct(CBODataTypes.CSGVector Vector1, CBODataTypes.CSGVector Vector2)
-        //{
-        //    var vector3_1 = new Vector3(Vector1.X, Vector1.Y, Vector1.Z);
-        //    var vector3_2 = new Vector3(Vector2.X, Vector2.Y, Vector2.Z);
+        // internal static float VectorDotProduct(CBODataTypes.CSGVector Vector1, CBODataTypes.CSGVector Vector2)
+        // {
+        // var vector3_1 = new Vector3(Vector1.X, Vector1.Y, Vector1.Z);
+        // var vector3_2 = new Vector3(Vector2.X, Vector2.Y, Vector2.Z);
 
-        //    return Vector3.Dot(vector3_1, vector3_2);
-        //}
+        // return Vector3.Dot(vector3_1, vector3_2);
+        // }
 
-        //internal static float VectorModulus(CBODataTypes.CSGVector Vector)
-        //{
-        //    var vector3 = new Vector3(Vector.X, Vector.Y, Vector.Z);
-        //    return vector3.Length();
+        // internal static float VectorModulus(CBODataTypes.CSGVector Vector)
+        // {
+        // var vector3 = new Vector3(Vector.X, Vector.Y, Vector.Z);
+        // return vector3.Length();
 
-        //    // return gcrCRetainedMode.VectorModulus(Vector.X, Vector.Y, Vector.Z);
-        //}
+        // // return gcrCRetainedMode.VectorModulus(Vector.X, Vector.Y, Vector.Z);
+        // }
 
-        //internal static void VectorNormalize(ref CBODataTypes.CSGVector Result, CBODataTypes.CSGVector Vector)
-        //{
-        //    var vector3 = new Vector3(Vector.X, Vector.Y, Vector.Z);
-        //    vector3.Normalize();
+        // internal static void VectorNormalize(ref CBODataTypes.CSGVector Result, CBODataTypes.CSGVector Vector)
+        // {
+        // var vector3 = new Vector3(Vector.X, Vector.Y, Vector.Z);
+        // vector3.Normalize();
 
-        //    Result.X = vector3.X;
-        //    Result.Y = vector3.Y;
-        //    Result.Z = vector3.Z;
-        //}
-
+        // Result.X = vector3.X;
+        // Result.Y = vector3.Y;
+        // Result.Z = vector3.Z;
+        // }
         internal static bool bCoLinear(Vector3[] cvTriangleFacet)
         {
             bool result = false;
@@ -182,8 +110,7 @@ namespace ACBO
                 Vector3 cvVertexNormal = cvGetNormal(cvaFacet);
 
                 // determine if convex at lvertex i.e. same normal as the polygon as a whole
-                if (Math.Abs(cvVertexNormal.X - cvPolygonNormal.X) > sComparisonValue
-                    || Math.Abs(cvVertexNormal.Y - cvPolygonNormal.Y) > sComparisonValue
+                if (Math.Abs(cvVertexNormal.X - cvPolygonNormal.X) > sComparisonValue || Math.Abs(cvVertexNormal.Y - cvPolygonNormal.Y) > sComparisonValue
                     || Math.Abs(cvVertexNormal.Z - cvPolygonNormal.Z) > sComparisonValue)
                 {
                     return false; // the easy way out
@@ -194,13 +121,7 @@ namespace ACBO
             return true;
         }
 
-        internal static bool bVectorEqual(
-            float sVector0X, 
-            float sVector0Y, 
-            float sVector0Z, 
-            float sVector1X, 
-            float sVector1Y, 
-            float sVector1z)
+        internal static bool bVectorEqual(float sVector0X, float sVector0Y, float sVector0Z, float sVector1X, float sVector1Y, float sVector1z)
         {
             bool result = Math.Abs(sVector0X - sVector1X) < CSG_sSmallEpsilon && Math.Abs(sVector0Y - sVector1Y) < CSG_sSmallEpsilon
                           && Math.Abs(sVector0Z - sVector1z) < CSG_sSmallEpsilon;
@@ -331,13 +252,75 @@ namespace ACBO
             return result;
         }
 
+        internal static void GetFacet(Vector3[] cvaFace, int lFacet, Vector3[] cvaFacet)
+        {
+            // get first vertex of facet
+            // exception for the first facet since the first vertex of the facet is the last
+            // vertex of the polygon
+            if (lFacet == 0)
+            {
+                cvaFacet[0] = cvaFace[cvaFace.GetUpperBound(0)];
+            }
+            else
+            {
+                // normal
+                cvaFacet[0] = cvaFace[lFacet - 1];
+            }
+
+            // get second vertex of facet
+            cvaFacet[1] = cvaFace[lFacet];
+
+            // get final vertex
+            // exception for final vertex since the final vertex of the facet is the
+            // first vertex of the polygon
+            if (lFacet == cvaFace.GetUpperBound(0))
+            {
+                cvaFacet[2] = cvaFace[0];
+            }
+            else
+            {
+                cvaFacet[2] = cvaFace[lFacet + 1];
+            }
+        }
+
+        internal static void GetFacet2(int[] laPolygon, int lFacet, int[] laFacet)
+        {
+            // get first vertex of facet
+            // exception for the first facet since the first vertex of the facet is the last
+            // vertex of the polygon
+            if (lFacet == 0)
+            {
+                laFacet[0] = laPolygon[laPolygon.GetUpperBound(0)];
+            }
+            else
+            {
+                // normal
+                laFacet[0] = laPolygon[lFacet - 1];
+            }
+
+            // get second vertex of facet
+            laFacet[1] = laPolygon[lFacet];
+
+            // get final vertex
+            // exception for final vertex since the final vertex of the facet is the
+            // first vertex of the polygon
+            if (lFacet == laPolygon.GetUpperBound(0))
+            {
+                laFacet[2] = laPolygon[0];
+            }
+            else
+            {
+                laFacet[2] = laPolygon[lFacet + 1];
+            }
+        }
+
         internal static int lGetSGPointIndex(
-            CBODataTypes.i_CSGPoint udtPoint, 
-            ref CBODataTypes.i_CSGPoint[] cvaPointList, 
-            ref int lPointListCount, 
-            int[] laHashTable, 
-            int lHashTableType, 
-            bool bTestOnly, 
+            CBODataTypes.i_CSGPoint udtPoint,
+            ref CBODataTypes.i_CSGPoint[] cvaPointList,
+            ref int lPointListCount,
+            int[] laHashTable,
+            int lHashTableType,
+            bool bTestOnly,
             bool bOptimizePoints)
         {
             int result = 0;
@@ -449,6 +432,10 @@ namespace ACBO
             return result;
         }
 
-        #endregion
+        // Purpose:
+
+        // *********************************************************************************
+        // Parameters:
+        // *********************************************************************************
     }
 }

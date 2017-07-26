@@ -7,12 +7,6 @@
 
     internal class ConstructiveSolidGeometryMesh
     {
-        #region Fields
-
-        public int[] PointHashTable;
-
-        public int PointHashTableType;
-
         public Dictionary<string, int> colEdge;
 
         // edge information
@@ -20,6 +14,10 @@
         public Vector3 cvCenter;
 
         public int lVertexCount;
+
+        public int[] PointHashTable;
+
+        public int PointHashTableType;
 
         public float sBoundingSphere;
 
@@ -33,273 +31,10 @@
 
         public CBODataTypes.i_CSGPoint[] xdtVertex; // the vertex list for the Shape
 
-        #endregion
-
-        // EdgeHashTable() As Long
-        // EdgeHashTableType As Long
-        #region Constructors and Destructors
-
         public ConstructiveSolidGeometryMesh()
         {
             this.xdtBoundingBox = CBODataTypes.CSGMinMaxVector.CreateInstance();
             this.colEdge = new Dictionary<string, int>();
-        }
-
-        #endregion
-
-        #region Public Methods and Operators
-
-        public void GetGeometry(
-            ref double lFaceMax, 
-            ref Vector3[] cvaCompactedVertices, 
-            ref int[] laFaceTuples, 
-            ref bool[] faceDeleted, 
-            ref int[] faceColor)
-        {
-            int lTupleCount = 0;
-            int lNewVertex = 0;
-
-            // find the number of faces in the CGMesh
-            lFaceMax = this.udtFace.Length - 1;
-
-            // modCSG.SafeUBound(UpgradeSolution1Support.PInvoke.SafeNative.msvbvm60.VarPtrArray(ArraysHelper.CastArray<System.IntPtr[]>(this.udtFace)));
-
-            // create the Shape
-            // if there are some faces
-            if (lFaceMax >= 0)
-            {
-                // run through the list of faces/vertices determining which are in
-                // use
-                faceDeleted = new bool[Convert.ToInt32(lFaceMax) + 1];
-                faceColor = new int[Convert.ToInt32(lFaceMax) + 1];
-                var laVerticesInUse = new int[this.xdtVertex.GetUpperBound(0) + 1, 3];
-                for (int lFace = 0; lFace <= this.udtFace.GetUpperBound(0); lFace++)
-                {
-                    if (!this.udtFace[lFace].bDeleted)
-                    {
-                        foreach (int item in this.udtFace[lFace].lVertex)
-                        {
-                            laVerticesInUse[item, 0] = 1;
-                        }
-                    }
-
-                    faceDeleted[lFace] = this.udtFace[lFace].bDeleted;
-                    faceColor[lFace] = this.udtFace[lFace].lColor;
-                }
-
-                // now calculate the new vertex # for the vertex list
-                // and create a compacted list while we are at it
-                int lVertex;
-                for (lVertex = 0; lVertex <= laVerticesInUse.GetUpperBound(0); lVertex++)
-                {
-                    if (laVerticesInUse[lVertex, 0] == 1)
-                    {
-                        laVerticesInUse[lVertex, 1] = lNewVertex;
-
-                        // the compacted list
-                        Array.Resize(ref cvaCompactedVertices, lNewVertex + 1);
-                        cvaCompactedVertices[lNewVertex] = this.xdtVertex[lVertex].PointXYZ;
-                        lNewVertex++;
-                    }
-                }
-
-                // get the number of vertices in the CGMesh
-                // run through the list of faces , adding them to the Shape
-                for (int lFace = 0; lFace <= this.udtFace.GetUpperBound(0); lFace++)
-                {
-                    if (!this.udtFace[lFace].bDeleted)
-                    {
-                        // allocate some space in the list
-                        Array.Resize(ref laFaceTuples, lTupleCount + 1 + this.udtFace[lFace].lVertex.GetUpperBound(0) * 3 + 2);
-                        laFaceTuples[lTupleCount] = this.udtFace[lFace].lVertex.GetUpperBound(0) + 1;
-                        lTupleCount++;
-                        for (lVertex = 0; lVertex <= this.udtFace[lFace].lVertex.GetUpperBound(0); lVertex++)
-                        {
-                            laFaceTuples[lTupleCount] = laVerticesInUse[this.udtFace[lFace].lVertex[lVertex], 1];
-                            lTupleCount += 3;
-                        }
-                    }
-                }
-
-                // udtCGMesh
-
-                // terminate the tuple list
-                Array.Resize(ref laFaceTuples, lTupleCount + 2);
-                laFaceTuples[lTupleCount] = 0;
-
-                // 'Reserve space for the Vertices, Normals and Faces
-                // csCreateShapeFromCGMeshData.ReserveSpace UBound(cvaCompactedVertices) + 1, 0, UBound(this.udtFace)
-                // add all of the faces to the Shape
-            }
-        }
-
-        public List<CSGCGPick> RayPick(CBODataTypes.CSGRay xdtRay, bool bTestFlaggedExteriors, float sMaxRange)
-        {
-            var udtaPick = new List<CSGCGPick>();
-            //var cvIntersectionPosition = new Vector3();
-            var udtaPickUnsorted = new List<CSGCGPick>();
-
-            float sMaxRangeSquared = sMaxRange * sMaxRange;
-            // int udtaPickUnsorted.Count = 0;
-
-            // int lPickCount = 0;
-            var rayPosition = new Vector3(xdtRay.Position.X, xdtRay.Position.Y, xdtRay.Position.Z);
-            var rayDirection = new Vector3(xdtRay.Direction.X, xdtRay.Direction.Y, xdtRay.Direction.Z);
-            var ray = new Ray(rayPosition, rayDirection);
-
-            var boundingBoxMinimum = new Vector3(this.xdtBoundingBox.Min.X, this.xdtBoundingBox.Min.Y, this.xdtBoundingBox.Min.Z);
-            var boundingBoxMaximum = new Vector3(this.xdtBoundingBox.Max.X, this.xdtBoundingBox.Max.Y, this.xdtBoundingBox.Max.Z);
-            var boundingBox = new BoundingBox(boundingBoxMinimum, boundingBoxMaximum);
-
-            // 'Dim bSorted                As Boolean
-
-            // Static lTotalJunk As Long
-            // Static lSeconds As Long
-            // Static lTotalPhase2Junk As Long
-            // Dim lJunk As Long
-            // Dim lJunk2 As Long
-            // Dim lJunk3 As Long
-            // lJunk = gcCHFGeneral.GetSystemTime
-            // if we have a large CGMesh (>10 faces), let's pre-test against the bounding box
-            if (ray.Intersects(boundingBox))
-            {
-                // go through faces until we find one that is intersected by the ray
-                for (int lFace = 0; lFace <= this.udtFace.GetUpperBound(0); lFace++)
-                {
-                    // ignore deleted faces
-                    if (!this.udtFace[lFace].bDeleted)
-                    {
-                        // optionally ignore intersections for faces that are flagged as exteriors
-                        if (bTestFlaggedExteriors || this.udtFace[lFace].udtIntersection != CBODataTypes.CSGFaceType.CSGFaceExterior)
-                        {
-                            var point0 = this.xdtVertex[this.udtFace[lFace].lVertex[0]].PointXYZ;
-                            var point1 = this.xdtVertex[this.udtFace[lFace].lVertex[1]].PointXYZ;
-                            var point2 = this.xdtVertex[this.udtFace[lFace].lVertex[2]].PointXYZ;
-
-                            // float intersectionPosition;
-                            // var result = Collision.RayIntersectsTriangle(ref ray, ref point0, ref point1, ref point2, out intersectionPosition);
-                            Vector3 intersectionPositionXYZ;
-                            var wasTriangleIntersected = Collision.RayIntersectsTriangle(
-                                ref ray, 
-                                ref point0, 
-                                ref point1, 
-                                ref point2, 
-                                out intersectionPositionXYZ);
-
-                            float intersectionDistance = float.MaxValue;
-
-                            if (wasTriangleIntersected)
-                            {
-                                Vector3 positionDifference = intersectionPositionXYZ - xdtRay.Position;
-                                intersectionDistance = positionDifference.Length();
-
-                                if (intersectionDistance > sMaxRange)
-                                {
-                                    const float myEpsilon = .00001f;
-                                    ray.Position += myEpsilon;
-                                    wasTriangleIntersected = Collision.RayIntersectsTriangle(
-                                        ref ray, 
-                                        ref point0, 
-                                        ref point1, 
-                                        ref point2, 
-                                        out intersectionPositionXYZ);
-
-                                    if (wasTriangleIntersected)
-                                    {
-                                        positionDifference = intersectionPositionXYZ - xdtRay.Position;
-                                        intersectionDistance = positionDifference.Length();
-
-                                        if (intersectionDistance > sMaxRange)
-                                        {
-                                            wasTriangleIntersected = false;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (wasTriangleIntersected)
-                            {
-                                //cvIntersectionPosition = intersectionPositionXYZ;
-
-                                // is the polygon convex?
-                                bool bConvex = pbConvex(this.xdtVertex, this.udtFace[lFace]);
-
-                                // which way does the polygon face
-                                float sDotProductResult = Vector3.Dot(this.udtFace[lFace].cvNormal, xdtRay.Direction);
-
-                                // add the pick to the list of picks
-                                var pick = new CSGCGPick();
-                                pick.lFace = lFace;
-                                pick.cvPosition = intersectionPositionXYZ;
-                                pick.sDistanceFromRayOrigin = intersectionDistance;
-                                pick.bConvex = bConvex;
-                                if (sDotProductResult < 0)
-                                {
-                                    pick.udtType = CBODataTypes.CSGFaceType.CSGFaceExterior;
-                                }
-                                else
-                                {
-                                    pick.udtType = CBODataTypes.CSGFaceType.CSGFaceInterior;
-                                }
-
-                                udtaPickUnsorted.Add(pick);
-
-                                // udtaPickUnsorted.Count++;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // now sort the unsorted intersection array
-            // bSorted = False
-            if (udtaPickUnsorted.Count > 1)
-            {
-                for (int lPick = 0; lPick <= udtaPickUnsorted.Count - 1; lPick++)
-                {
-                    float lPickMinimum = lPick;
-                    for (int lPick2 = lPick + 1; lPick2 <= udtaPickUnsorted.Count - 1; lPick2++)
-                    {
-                        // if the same, try to get one that is convex
-                        if (
-                            Math.Abs(
-                                udtaPickUnsorted[lPick2].sDistanceFromRayOrigin
-                                - udtaPickUnsorted[Convert.ToInt32(lPickMinimum)].sDistanceFromRayOrigin) < Helper.CSG_sSmallEpsilon
-                            && udtaPickUnsorted[lPick2].bConvex && !udtaPickUnsorted[Convert.ToInt32(lPickMinimum)].bConvex)
-                        {
-                            lPickMinimum = lPick2;
-                        }
-                        else if (udtaPickUnsorted[lPick2].sDistanceFromRayOrigin
-                                 < udtaPickUnsorted[Convert.ToInt32(lPickMinimum)].sDistanceFromRayOrigin)
-                        {
-                            lPickMinimum = lPick2;
-                        }
-                    }
-
-                    CSGCGPick udtPickSwap = udtaPickUnsorted[lPick];
-                    udtaPickUnsorted[lPick] = udtaPickUnsorted[Convert.ToInt32(lPickMinimum)]; // copy minimum to pick
-                    udtaPickUnsorted[Convert.ToInt32(lPickMinimum)] = udtPickSwap; // copy old over previous minimum
-                }
-            }
-
-            // copy the unique sorted items to the sorted list
-            if (udtaPickUnsorted.Count > 0)
-            {
-                int lPickCount = 1;
-                udtaPick.Add(udtaPickUnsorted[0]);
-                for (int lPick = 1; lPick <= udtaPickUnsorted.Count - 1; lPick++)
-                {
-                    // if not just a duplicate of something in the list already
-                    if (Math.Abs(udtaPick[lPickCount - 1].sDistanceFromRayOrigin - udtaPickUnsorted[lPick].sDistanceFromRayOrigin)
-                        > Helper.CSG_sSmallEpsilon)
-                    {
-                        udtaPick.Add(udtaPickUnsorted[lPick]);
-                        lPickCount++;
-                    }
-                }
-            }
-
-            return udtaPick;
         }
 
         public bool bDividePolygon(int lFace, float sVertexX, float sVertexY, float sVertexZ)
@@ -327,14 +62,7 @@
 
             // lNewVertex = gcCSGFunctions.getVertexCGMesh(udtCGMesh, xdtVertex, acPrecise) 'get the potentially new vertex
             // lNewVertex = gcCSGFunctions.getVertexIndex(xdtVertex, this.xdtVertex, this.lVertexCount, this.xdtBoundingBox.Min.x, this.xdtBoundingBox.Max.x, this.udtaVertexHashTable)
-            int lNewVertex = Helper.lGetSGPointIndex(
-                vertex, 
-                ref this.xdtVertex, 
-                ref this.lVertexCount, 
-                this.PointHashTable, 
-                this.PointHashTableType, 
-                false, 
-                true);
+            int lNewVertex = Helper.lGetSGPointIndex(vertex, ref this.xdtVertex, ref this.lVertexCount, this.PointHashTable, this.PointHashTableType, false, true);
 
             // if we still have the same number of vertices then the vertex was an existing vertex
             if (this.xdtVertex.GetUpperBound(0) == lMaxVertex)
@@ -420,14 +148,7 @@
 
             // lVertexFound = gcCSGFunctions.getVertexCGMesh(udtCGMesh, xdtVertex, acPrecise)
             // lVertexFound = gcCSGFunctions.getVertexIndex(xdtVertex, this.xdtVertex, this.lVertexCount, this.xdtBoundingBox.Min.x, this.xdtBoundingBox.Max.x, this.udtaVertexHashTable)
-            int lVertexFound = Helper.lGetSGPointIndex(
-                vertex, 
-                ref this.xdtVertex, 
-                ref this.lVertexCount, 
-                this.PointHashTable, 
-                this.PointHashTableType, 
-                false, 
-                true);
+            int lVertexFound = Helper.lGetSGPointIndex(vertex, ref this.xdtVertex, ref this.lVertexCount, this.PointHashTable, this.PointHashTableType, false, true);
 
             // since we are splitting an edge, an intersection position of either the
             // origin of the edge or end of the edge means we need not doing anything
@@ -478,14 +199,7 @@
 
                         // lVertexFound = gcCSGFunctions.getVertexCGMesh(udtCGMesh, xdtVertex, acPrecise)
                         // lVertexFound = gcCSGFunctions.getVertexIndex(xdtVertex, this.xdtVertex, this.lVertexCount, this.xdtBoundingBox.Min.x, this.xdtBoundingBox.Max.x, this.udtaVertexHashTable)
-                        lVertexFound = Helper.lGetSGPointIndex(
-                            vertex, 
-                            ref this.xdtVertex, 
-                            ref this.lVertexCount, 
-                            this.PointHashTable, 
-                            this.PointHashTableType, 
-                            false, 
-                            true);
+                        lVertexFound = Helper.lGetSGPointIndex(vertex, ref this.xdtVertex, ref this.lVertexCount, this.PointHashTable, this.PointHashTableType, false, true);
 
                         // did we find the origin of the edge? if so we didn't fix things
                         if (lVertexFound == lEdgeSplit[1])
@@ -562,9 +276,240 @@
             return result;
         }
 
-        #endregion
+        public void GetGeometry(ref double lFaceMax, ref Vector3[] cvaCompactedVertices, ref int[] laFaceTuples, ref bool[] faceDeleted, ref int[] faceColor)
+        {
+            int lTupleCount = 0;
+            int lNewVertex = 0;
 
-        #region Methods
+            // find the number of faces in the CGMesh
+            lFaceMax = this.udtFace.Length - 1;
+
+            // modCSG.SafeUBound(UpgradeSolution1Support.PInvoke.SafeNative.msvbvm60.VarPtrArray(ArraysHelper.CastArray<System.IntPtr[]>(this.udtFace)));
+
+            // create the Shape
+            // if there are some faces
+            if (lFaceMax >= 0)
+            {
+                // run through the list of faces/vertices determining which are in
+                // use
+                faceDeleted = new bool[Convert.ToInt32(lFaceMax) + 1];
+                faceColor = new int[Convert.ToInt32(lFaceMax) + 1];
+                var laVerticesInUse = new int[this.xdtVertex.GetUpperBound(0) + 1, 3];
+                for (int lFace = 0; lFace <= this.udtFace.GetUpperBound(0); lFace++)
+                {
+                    if (!this.udtFace[lFace].bDeleted)
+                    {
+                        foreach (int item in this.udtFace[lFace].lVertex)
+                        {
+                            laVerticesInUse[item, 0] = 1;
+                        }
+                    }
+
+                    faceDeleted[lFace] = this.udtFace[lFace].bDeleted;
+                    faceColor[lFace] = this.udtFace[lFace].lColor;
+                }
+
+                // now calculate the new vertex # for the vertex list
+                // and create a compacted list while we are at it
+                int lVertex;
+                for (lVertex = 0; lVertex <= laVerticesInUse.GetUpperBound(0); lVertex++)
+                {
+                    if (laVerticesInUse[lVertex, 0] == 1)
+                    {
+                        laVerticesInUse[lVertex, 1] = lNewVertex;
+
+                        // the compacted list
+                        Array.Resize(ref cvaCompactedVertices, lNewVertex + 1);
+                        cvaCompactedVertices[lNewVertex] = this.xdtVertex[lVertex].PointXYZ;
+                        lNewVertex++;
+                    }
+                }
+
+                // get the number of vertices in the CGMesh
+                // run through the list of faces , adding them to the Shape
+                for (int lFace = 0; lFace <= this.udtFace.GetUpperBound(0); lFace++)
+                {
+                    if (!this.udtFace[lFace].bDeleted)
+                    {
+                        // allocate some space in the list
+                        Array.Resize(ref laFaceTuples, lTupleCount + 1 + this.udtFace[lFace].lVertex.GetUpperBound(0) * 3 + 2);
+                        laFaceTuples[lTupleCount] = this.udtFace[lFace].lVertex.GetUpperBound(0) + 1;
+                        lTupleCount++;
+                        for (lVertex = 0; lVertex <= this.udtFace[lFace].lVertex.GetUpperBound(0); lVertex++)
+                        {
+                            laFaceTuples[lTupleCount] = laVerticesInUse[this.udtFace[lFace].lVertex[lVertex], 1];
+                            lTupleCount += 3;
+                        }
+                    }
+                }
+
+                // udtCGMesh
+
+                // terminate the tuple list
+                Array.Resize(ref laFaceTuples, lTupleCount + 2);
+                laFaceTuples[lTupleCount] = 0;
+
+                // 'Reserve space for the Vertices, Normals and Faces
+                // csCreateShapeFromCGMeshData.ReserveSpace UBound(cvaCompactedVertices) + 1, 0, UBound(this.udtFace)
+                // add all of the faces to the Shape
+            }
+        }
+
+        public List<CSGCGPick> RayPick(CBODataTypes.CSGRay xdtRay, bool bTestFlaggedExteriors, float sMaxRange)
+        {
+            var udtaPick = new List<CSGCGPick>();
+
+            // var cvIntersectionPosition = new Vector3();
+            var udtaPickUnsorted = new List<CSGCGPick>();
+
+            float sMaxRangeSquared = sMaxRange * sMaxRange;
+
+            // int udtaPickUnsorted.Count = 0;
+
+            // int lPickCount = 0;
+            var rayPosition = new Vector3(xdtRay.Position.X, xdtRay.Position.Y, xdtRay.Position.Z);
+            var rayDirection = new Vector3(xdtRay.Direction.X, xdtRay.Direction.Y, xdtRay.Direction.Z);
+            var ray = new Ray(rayPosition, rayDirection);
+
+            var boundingBoxMinimum = new Vector3(this.xdtBoundingBox.Min.X, this.xdtBoundingBox.Min.Y, this.xdtBoundingBox.Min.Z);
+            var boundingBoxMaximum = new Vector3(this.xdtBoundingBox.Max.X, this.xdtBoundingBox.Max.Y, this.xdtBoundingBox.Max.Z);
+            var boundingBox = new BoundingBox(boundingBoxMinimum, boundingBoxMaximum);
+
+            // 'Dim bSorted                As Boolean
+
+            // Static lTotalJunk As Long
+            // Static lSeconds As Long
+            // Static lTotalPhase2Junk As Long
+            // Dim lJunk As Long
+            // Dim lJunk2 As Long
+            // Dim lJunk3 As Long
+            // lJunk = gcCHFGeneral.GetSystemTime
+            // if we have a large CGMesh (>10 faces), let's pre-test against the bounding box
+            if (ray.Intersects(boundingBox))
+            {
+                // go through faces until we find one that is intersected by the ray
+                for (int lFace = 0; lFace <= this.udtFace.GetUpperBound(0); lFace++)
+                {
+                    // ignore deleted faces
+                    if (!this.udtFace[lFace].bDeleted)
+                    {
+                        // optionally ignore intersections for faces that are flagged as exteriors
+                        if (bTestFlaggedExteriors || this.udtFace[lFace].udtIntersection != CBODataTypes.CSGFaceType.CSGFaceExterior)
+                        {
+                            var point0 = this.xdtVertex[this.udtFace[lFace].lVertex[0]].PointXYZ;
+                            var point1 = this.xdtVertex[this.udtFace[lFace].lVertex[1]].PointXYZ;
+                            var point2 = this.xdtVertex[this.udtFace[lFace].lVertex[2]].PointXYZ;
+
+                            // float intersectionPosition;
+                            // var result = Collision.RayIntersectsTriangle(ref ray, ref point0, ref point1, ref point2, out intersectionPosition);
+                            Vector3 intersectionPositionXYZ;
+                            var wasTriangleIntersected = Collision.RayIntersectsTriangle(ref ray, ref point0, ref point1, ref point2, out intersectionPositionXYZ);
+
+                            float intersectionDistance = float.MaxValue;
+
+                            if (wasTriangleIntersected)
+                            {
+                                Vector3 positionDifference = intersectionPositionXYZ - xdtRay.Position;
+                                intersectionDistance = positionDifference.Length();
+
+                                if (intersectionDistance > sMaxRange)
+                                {
+                                    const float myEpsilon = .00001f;
+                                    ray.Position += myEpsilon;
+                                    wasTriangleIntersected = Collision.RayIntersectsTriangle(ref ray, ref point0, ref point1, ref point2, out intersectionPositionXYZ);
+
+                                    if (wasTriangleIntersected)
+                                    {
+                                        positionDifference = intersectionPositionXYZ - xdtRay.Position;
+                                        intersectionDistance = positionDifference.Length();
+
+                                        if (intersectionDistance > sMaxRange)
+                                        {
+                                            wasTriangleIntersected = false;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (wasTriangleIntersected)
+                            {
+                                // cvIntersectionPosition = intersectionPositionXYZ;
+
+                                // is the polygon convex?
+                                bool bConvex = pbConvex(this.xdtVertex, this.udtFace[lFace]);
+
+                                // which way does the polygon face
+                                float sDotProductResult = Vector3.Dot(this.udtFace[lFace].cvNormal, xdtRay.Direction);
+
+                                // add the pick to the list of picks
+                                var pick = new CSGCGPick();
+                                pick.lFace = lFace;
+                                pick.cvPosition = intersectionPositionXYZ;
+                                pick.sDistanceFromRayOrigin = intersectionDistance;
+                                pick.bConvex = bConvex;
+                                if (sDotProductResult < 0)
+                                {
+                                    pick.udtType = CBODataTypes.CSGFaceType.CSGFaceExterior;
+                                }
+                                else
+                                {
+                                    pick.udtType = CBODataTypes.CSGFaceType.CSGFaceInterior;
+                                }
+
+                                udtaPickUnsorted.Add(pick);
+
+                                // udtaPickUnsorted.Count++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // now sort the unsorted intersection array
+            // bSorted = False
+            if (udtaPickUnsorted.Count > 1)
+            {
+                for (int lPick = 0; lPick <= udtaPickUnsorted.Count - 1; lPick++)
+                {
+                    float lPickMinimum = lPick;
+                    for (int lPick2 = lPick + 1; lPick2 <= udtaPickUnsorted.Count - 1; lPick2++)
+                    {
+                        // if the same, try to get one that is convex
+                        if (Math.Abs(udtaPickUnsorted[lPick2].sDistanceFromRayOrigin - udtaPickUnsorted[Convert.ToInt32(lPickMinimum)].sDistanceFromRayOrigin)
+                            < Helper.CSG_sSmallEpsilon && udtaPickUnsorted[lPick2].bConvex && !udtaPickUnsorted[Convert.ToInt32(lPickMinimum)].bConvex)
+                        {
+                            lPickMinimum = lPick2;
+                        }
+                        else if (udtaPickUnsorted[lPick2].sDistanceFromRayOrigin < udtaPickUnsorted[Convert.ToInt32(lPickMinimum)].sDistanceFromRayOrigin)
+                        {
+                            lPickMinimum = lPick2;
+                        }
+                    }
+
+                    CSGCGPick udtPickSwap = udtaPickUnsorted[lPick];
+                    udtaPickUnsorted[lPick] = udtaPickUnsorted[Convert.ToInt32(lPickMinimum)]; // copy minimum to pick
+                    udtaPickUnsorted[Convert.ToInt32(lPickMinimum)] = udtPickSwap; // copy old over previous minimum
+                }
+            }
+
+            // copy the unique sorted items to the sorted list
+            if (udtaPickUnsorted.Count > 0)
+            {
+                int lPickCount = 1;
+                udtaPick.Add(udtaPickUnsorted[0]);
+                for (int lPick = 1; lPick <= udtaPickUnsorted.Count - 1; lPick++)
+                {
+                    // if not just a duplicate of something in the list already
+                    if (Math.Abs(udtaPick[lPickCount - 1].sDistanceFromRayOrigin - udtaPickUnsorted[lPick].sDistanceFromRayOrigin) > Helper.CSG_sSmallEpsilon)
+                    {
+                        udtaPick.Add(udtaPickUnsorted[lPick]);
+                        lPickCount++;
+                    }
+                }
+            }
+
+            return udtaPick;
+        }
 
         internal int AddFace(CBODataTypes.CSGCGFace face, bool bValidateFace)
         {
@@ -614,6 +559,41 @@
             {
                 // otherwise halt with an error
                 throw new CGIntersectionFailureException();
+            }
+
+            return result;
+        }
+
+        internal bool bMatchEdgeCGMesh(int[] lEdge, ref int lMatchedFace, ref int lMatchedEdge)
+        {
+            // UPGRADE_TODO: (1065) Error handling statement (On Error Goto) could not be converted. More Information: http://www.vbtonet.com/ewis/ewi1065.aspx
+            bool result = false;
+
+            // UpgradeHelpers.Helpers.NotUpgradedHelper.NotifyNotUpgradedElement("On Error Goto Label (0)");
+            // the matching edge must be here by definition (since we are closed)
+            // insert the edges into the collection
+            // UPGRADE_TODO: (1069) Error handling statement (On Error Resume Next) was converted to a pattern that might have a different behavior. More Information: http://www.vbtonet.com/ewis/ewi1069.aspx
+            try
+            {
+                int lFaceEdge;
+                if (this.colEdge.TryGetValue(lEdge[1].ToString() + "|" + lEdge[0].ToString(), out lFaceEdge))
+                {
+                    // int lFaceEdge = Convert.ToInt32(this.colEdge[lEdge[1].ToString() + "|" + lEdge[0].ToString()]);
+                    ////UPGRADE_WARNING: (2081) Err.Number has a new behavior. More Information: http://www.vbtonet.com/ewis/ewi2081.aspx
+                    // if (Information.Err().Number == 0)
+                    // {
+                    lMatchedFace = lFaceEdge / 10000;
+                    lMatchedEdge = lFaceEdge % 10000;
+                    result = true;
+                }
+                else
+                {
+                    result = false;
+                }
+            }
+            catch (Exception)
+            {
+                // NotUpgradedHelper.NotifyNotUpgradedElement("Resume in On-Error-Resume-Next Block");
             }
 
             return result;
@@ -851,16 +831,16 @@
         }
 
         internal void InitializeFromGeometry(
-            Vector3[] PointList, 
-            int PointListCount, 
-            Vector3[] NormalList, 
-            int NormalListCount, 
-            CBODataTypes.CSGUV[] TextureCoordinateList, 
-            int TextureCoordinateListCount, 
-            int[] FaceData, 
-            int FaceDataCount, 
-            int[] faceColorList, 
-            int faceColorListCount, 
+            Vector3[] PointList,
+            int PointListCount,
+            Vector3[] NormalList,
+            int NormalListCount,
+            CBODataTypes.CSGUV[] TextureCoordinateList,
+            int TextureCoordinateListCount,
+            int[] FaceData,
+            int FaceDataCount,
+            int[] faceColorList,
+            int faceColorListCount,
             bool bValidateFace)
         {
             CBODataTypes.CSGCGFace face = CBODataTypes.CSGCGFace.CreateInstance();
@@ -898,12 +878,12 @@
             {
                 udtPoint.PointXYZ = PointList[lVertex]; // cvaShapeVertexList(lVertex)
                 lCGMeshVertexList[lVertex] = Helper.lGetSGPointIndex(
-                    udtPoint, 
-                    ref this.xdtVertex, 
-                    ref this.lVertexCount, 
-                    this.PointHashTable, 
-                    this.PointHashTableType, 
-                    false, 
+                    udtPoint,
+                    ref this.xdtVertex,
+                    ref this.lVertexCount,
+                    this.PointHashTable,
+                    this.PointHashTableType,
+                    false,
                     true);
             }
 
@@ -1091,41 +1071,6 @@
             return result;
         }
 
-        internal bool bMatchEdgeCGMesh(int[] lEdge, ref int lMatchedFace, ref int lMatchedEdge)
-        {
-            // UPGRADE_TODO: (1065) Error handling statement (On Error Goto) could not be converted. More Information: http://www.vbtonet.com/ewis/ewi1065.aspx
-            bool result = false;
-
-            // UpgradeHelpers.Helpers.NotUpgradedHelper.NotifyNotUpgradedElement("On Error Goto Label (0)");
-            // the matching edge must be here by definition (since we are closed)
-            // insert the edges into the collection
-            // UPGRADE_TODO: (1069) Error handling statement (On Error Resume Next) was converted to a pattern that might have a different behavior. More Information: http://www.vbtonet.com/ewis/ewi1069.aspx
-            try
-            {
-                int lFaceEdge;
-                if (this.colEdge.TryGetValue(lEdge[1].ToString() + "|" + lEdge[0].ToString(), out lFaceEdge))
-                {
-                    // int lFaceEdge = Convert.ToInt32(this.colEdge[lEdge[1].ToString() + "|" + lEdge[0].ToString()]);
-                    ////UPGRADE_WARNING: (2081) Err.Number has a new behavior. More Information: http://www.vbtonet.com/ewis/ewi2081.aspx
-                    // if (Information.Err().Number == 0)
-                    // {
-                    lMatchedFace = lFaceEdge / 10000;
-                    lMatchedEdge = lFaceEdge % 10000;
-                    result = true;
-                }
-                else
-                {
-                    result = false;
-                }
-            }
-            catch (Exception)
-            {
-                // NotUpgradedHelper.NotifyNotUpgradedElement("Resume in On-Error-Resume-Next Block");
-            }
-
-            return result;
-        }
-
         private static void CreateBoundingPlanes(CBODataTypes.i_CSGPoint[] xdtVertex, CBODataTypes.CSGCGFace udtFace)
         {
             var cvaEdge = new Vector3[2];
@@ -1158,41 +1103,6 @@
         private static void CreateNormal(CBODataTypes.i_CSGPoint[] xdtVertex, ref CBODataTypes.CSGCGFace udtFace)
         {
             udtFace.cvNormal = pcvGetNormal(xdtVertex, udtFace);
-        }
-
-        private static void pGetFacet(
-            CBODataTypes.i_CSGPoint[] xdtVertex, 
-            CBODataTypes.CSGCGFace udtPolygon, 
-            int lFacet, 
-            Vector3[] cvFacet)
-        {
-            // get first vertex of facet
-            // exception for the first facet since the first vertex of the facet is the last
-            // vertex of the polygon
-            if (lFacet == 0)
-            {
-                cvFacet[0] = xdtVertex[udtPolygon.lVertex[udtPolygon.lVertex.GetUpperBound(0)]].PointXYZ;
-            }
-            else
-            {
-                // normal
-                cvFacet[0] = xdtVertex[udtPolygon.lVertex[lFacet - 1]].PointXYZ;
-            }
-
-            // get second vertex of facet
-            cvFacet[1] = xdtVertex[udtPolygon.lVertex[lFacet]].PointXYZ;
-
-            // get final vertex
-            // exception for final vertex since the final vertex of the facet is the
-            // first vertex of the polygon
-            if (lFacet == udtPolygon.lVertex.GetUpperBound(0))
-            {
-                cvFacet[2] = xdtVertex[udtPolygon.lVertex[0]].PointXYZ;
-            }
-            else
-            {
-                cvFacet[2] = xdtVertex[udtPolygon.lVertex[lFacet + 1]].PointXYZ;
-            }
         }
 
         // *********************************************************************************
@@ -1296,8 +1206,7 @@
                 // Is it because the effect of doing ALL of the vertices of a polygon
                 // corrects the obvious problem?
                 // time for the cross product calculation
-                cvNormal = Vector3.Cross(xdtVertex[udtFace.lVertex[lVertexPrevious]].PointXYZ, 
-                    xdtVertex[udtFace.lVertex[lVertex]].PointXYZ);
+                cvNormal = Vector3.Cross(xdtVertex[udtFace.lVertex[lVertexPrevious]].PointXYZ, xdtVertex[udtFace.lVertex[lVertex]].PointXYZ);
 
                 // sum things up
                 result.X += cvNormal.X;
@@ -1337,6 +1246,426 @@
             }
 
             return result;
+        }
+
+        private static void pGetFacet(CBODataTypes.i_CSGPoint[] xdtVertex, CBODataTypes.CSGCGFace udtPolygon, int lFacet, Vector3[] cvFacet)
+        {
+            // get first vertex of facet
+            // exception for the first facet since the first vertex of the facet is the last
+            // vertex of the polygon
+            if (lFacet == 0)
+            {
+                cvFacet[0] = xdtVertex[udtPolygon.lVertex[udtPolygon.lVertex.GetUpperBound(0)]].PointXYZ;
+            }
+            else
+            {
+                // normal
+                cvFacet[0] = xdtVertex[udtPolygon.lVertex[lFacet - 1]].PointXYZ;
+            }
+
+            // get second vertex of facet
+            cvFacet[1] = xdtVertex[udtPolygon.lVertex[lFacet]].PointXYZ;
+
+            // get final vertex
+            // exception for final vertex since the final vertex of the facet is the
+            // first vertex of the polygon
+            if (lFacet == udtPolygon.lVertex.GetUpperBound(0))
+            {
+                cvFacet[2] = xdtVertex[udtPolygon.lVertex[0]].PointXYZ;
+            }
+            else
+            {
+                cvFacet[2] = xdtVertex[udtPolygon.lVertex[lFacet + 1]].PointXYZ;
+            }
+        }
+
+        // *********************************************************************************
+        // Private Methods
+        // *********************************************************************************
+        // *********************************************************************************
+        // Purpose:
+        // Parameters:
+        // *********************************************************************************
+        private bool pbDeTessellateProcess(int lFace0, int lEdge0, int lFace1, int lEdge1)
+        {
+            bool result = false;
+            Vector3[] cvaVertices = null;
+            int[] laVertices = null;
+            var cvaFacet = new Vector3[3];
+            int lColinearVertex = 0;
+            var laCompanionFaces = new int[2];
+            var laCompanionEdges = new int[2];
+            var laMatchingEdges = new int[2];
+            int lMatchedEdge = 0;
+            int lMatchedFace = 0;
+            CBODataTypes.CSGCGFace face = CBODataTypes.CSGCGFace.CreateInstance();
+            var laColinearFacet = new int[3];
+            var laFacet = new int[3];
+            var laEdge = new int[2];
+            int lColinearFacet = 0;
+
+            // Dim lFaceMax            As Long
+
+            // merge the faces (as an array)
+            this.pMergeFacesOnEdge(lFace0, lEdge0, lFace1, lEdge1, ref cvaVertices, ref laVertices);
+
+            // see if we have any facets that are colinear
+            int lColinearFacetCount = 0;
+            for (int lVertex = 0; lVertex <= cvaVertices.GetUpperBound(0); lVertex++)
+            {
+                Helper.GetFacet(cvaVertices, lVertex, cvaFacet);
+
+                // are we co-linear and convex
+                if (Helper.bCoLinear(cvaFacet))
+                {
+                    // And bConvex(cvaFacet) Then
+                    lColinearFacetCount++;
+                    lColinearVertex = laVertices[lVertex];
+                    lColinearFacet = lVertex;
+                    Helper.GetFacet2(laVertices, lVertex, laColinearFacet);
+                }
+
+                // if we have more than one colinear facet then no need to look further
+                if (lColinearFacetCount > 1)
+                {
+                    break;
+                }
+            }
+
+            // if we have only one colinear facet we can be pretty sure that
+            // we can merge the colinear facet into a single edge
+            if (lColinearFacetCount == 1)
+            {
+                // if we are removing a facet, there must be two
+                // companion polygons that share this facet. these companion
+                // polygons will have to be merged on the facet also.
+                // note that we don't check for the faces being co-planar because
+                // we are ASSUMMING that we are detessellating because we have
+                // TRIANGLES and two triangles that can be merged such that
+                // they produce a colinear edge, must have been co-planar.
+                // get the facet that is colinear
+                Helper.GetFacet2(laVertices, lColinearFacet, laFacet);
+
+                // find companion faces
+                bool bCompanionsFound = false;
+                laEdge[0] = laFacet[0];
+                laEdge[1] = laFacet[1];
+                if (this.bMatchEdgeCGMesh(laEdge, ref laCompanionFaces[0], ref laCompanionEdges[0]))
+                {
+                    laEdge[0] = laFacet[1];
+                    laEdge[1] = laFacet[2];
+                    if (this.bMatchEdgeCGMesh(laEdge, ref laCompanionFaces[1], ref laCompanionEdges[1]))
+                    {
+                        // see if the companion faces join on an edge. If so, then we have
+                        // companions that will likely create a convex polygon when merged
+                        // the easiest way is to run through the edges of one, finding the
+                        // matching edges. if one of the matching edges is part of the
+                        // other companion then we found it
+                        for (int lVertex = 0; lVertex <= this.udtFace[laCompanionFaces[0]].lVertex.GetUpperBound(0); lVertex++)
+                        {
+                            CBO.GetEdgeCGMesh(this.udtFace[laCompanionFaces[0]], lVertex, laEdge);
+
+                            // have matched an edge
+                            if (this.bMatchEdgeCGMesh(laEdge, ref lMatchedFace, ref lMatchedEdge))
+                            {
+                                // have we found it
+                                if (lMatchedFace == laCompanionFaces[1])
+                                {
+                                    // found it
+                                    bCompanionsFound = true;
+                                    laMatchingEdges[0] = lVertex;
+                                    laMatchingEdges[1] = lMatchedEdge;
+
+                                    // ensure that the new potential new edge doesn't already exist within the CGMesh
+                                    // this is really a hack - in a truly closed shape this
+                                    // shouldn't happen, but sometimes we get so odd arrangements
+                                    // when we hack and shape closed
+                                    laEdge[0] = laColinearFacet[0];
+                                    laEdge[1] = laColinearFacet[2];
+                                    if (this.bMatchEdgeCGMesh(laEdge, ref lMatchedFace, ref lMatchedEdge) && lMatchedFace != lFace0 && lMatchedFace != lFace1)
+                                    {
+                                        // didn't find it
+                                        bCompanionsFound = false;
+                                    }
+
+                                    // Stop 'found it
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (bCompanionsFound)
+                {
+                    // test that the merged faces will be convex
+                    // the test merge
+                    // and ensure it is convex
+                    var cvaTestMerge = new Vector3[cvaVertices.GetUpperBound(0)];
+                    int lActualVertex = 0;
+                    for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
+                    {
+                        if (laVertices[lVertex] != lColinearVertex)
+                        {
+                            cvaTestMerge[lActualVertex] = cvaVertices[lVertex];
+                            lActualVertex++;
+                        }
+                    }
+
+                    if (Helper.bConvex(cvaTestMerge, false))
+                    {
+                        // merge the companion faces (as an array)
+                        this.pMergeFacesOnEdge(laCompanionFaces[0], laMatchingEdges[0], laCompanionFaces[1], laMatchingEdges[1], ref cvaVertices, ref laVertices);
+
+                        // the test merging
+                        cvaTestMerge = new Vector3[cvaVertices.GetUpperBound(0)];
+                        lActualVertex = 0;
+                        for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
+                        {
+                            if (laVertices[lVertex] != lColinearVertex)
+                            {
+                                cvaTestMerge[lActualVertex] = cvaVertices[lVertex];
+                                lActualVertex++;
+                            }
+                        }
+
+                        if (Helper.bConvex(cvaTestMerge, false))
+                        {
+                            // merge the faces (as an array)
+                            this.pMergeFacesOnEdge(lFace0, lEdge0, lFace1, lEdge1, ref cvaVertices, ref laVertices);
+
+                            // merge the two faces (for real)
+                            // create the new face
+                            CBO.CreateFace(ref face, laVertices.GetUpperBound(0) - 1);
+
+                            // set the color (just use the first face's color)
+                            face.lColor = this.udtFace[lFace0].lColor;
+
+                            // set the interior/exterior (just use the first face's)
+                            face.udtIntersection = this.udtFace[lFace0].udtIntersection;
+
+                            // the merging
+                            lActualVertex = 0;
+                            for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
+                            {
+                                if (laVertices[lVertex] != lColinearVertex)
+                                {
+                                    // this.udtFace(lFaceMax).lVertex(lActualVertex) = laVertices(lVertex)
+                                    face.lVertex[lActualVertex] = laVertices[lVertex];
+                                    lActualVertex++;
+                                }
+                            }
+
+                            // remove old polygons
+                            this.DeleteFace(lFace0);
+                            this.DeleteFace(lFace1);
+
+                            // add the merged face to the CGMesh
+                            this.AddFace(face, false);
+
+                            // merge the companion faces (as an array)
+                            this.pMergeFacesOnEdge(laCompanionFaces[0], laMatchingEdges[0], laCompanionFaces[1], laMatchingEdges[1], ref cvaVertices, ref laVertices);
+
+                            // merge the two faces (for real)
+                            // create the new face
+                            CBO.CreateFace(ref face, laVertices.GetUpperBound(0) - 1);
+
+                            // set the color (just use the first face's color)
+                            face.lColor = this.udtFace[laCompanionFaces[0]].lColor;
+
+                            // set the interior/exterior (just use the first face's)
+                            face.udtIntersection = this.udtFace[laCompanionFaces[0]].udtIntersection;
+
+                            // the merging
+                            lActualVertex = 0;
+                            for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
+                            {
+                                if (laVertices[lVertex] != lColinearVertex)
+                                {
+                                    // this.udtFace(lFaceMax).lVertex(lActualVertex) = laVertices(lVertex)
+                                    face.lVertex[lActualVertex] = laVertices[lVertex];
+                                    lActualVertex++;
+                                }
+                            }
+
+                            // remove old polygons
+                            this.DeleteFace(laCompanionFaces[0]);
+                            this.DeleteFace(laCompanionFaces[1]);
+
+                            // add the face to the CGMesh
+                            this.AddFace(face, false);
+
+                            // yes we did change things
+                            result = true;
+                        }
+                    }
+                }
+
+                // if we have none, and the polygon is convex then the merge is OK
+            }
+            else if (lColinearFacetCount == 0)
+            {
+                if (Helper.bConvex(cvaVertices, false))
+                {
+                    // merge the two faces (for real)
+                    // create the new face
+                    CBO.CreateFace(ref face, laVertices.GetUpperBound(0));
+
+                    // set the color (just use the first face's color)
+                    face.lColor = this.udtFace[lFace0].lColor;
+
+                    // set the interior/exterior (just use the first face's)
+                    face.udtIntersection = this.udtFace[lFace0].udtIntersection;
+
+                    // the merging
+                    for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
+                    {
+                        face.lVertex[lVertex] = laVertices[lVertex];
+                    }
+
+                    // remove old polygons
+                    this.DeleteFace(lFace0);
+                    this.DeleteFace(lFace1);
+
+                    // add the face to the CGMesh
+                    this.AddFace(face, false);
+
+                    // yes we did change things
+                    result = true;
+                }
+            }
+
+            return result;
+        }
+
+        // *********************************************************************************
+        // Purpose:
+        // Parameters:
+        // *********************************************************************************
+        private bool pbDeTessellateProcessQuick(int lFace0, int lEdge0, int lFace1, int lEdge1)
+        {
+            bool result = false;
+            Vector3[] cvaVertices = null;
+            int[] laVertices = null;
+            CBODataTypes.CSGCGFace face = CBODataTypes.CSGCGFace.CreateInstance();
+
+            // Dim lFaceMax      As Long
+
+            // merge the faces (as an array)
+            this.pMergeFacesOnEdge(lFace0, lEdge0, lFace1, lEdge1, ref cvaVertices, ref laVertices);
+            if (Helper.bConvex(cvaVertices, true))
+            {
+                // merge the two faces (for real)
+                // create the new face
+                CBO.CreateFace(ref face, laVertices.GetUpperBound(0));
+
+                // set the color (just use the first face's color)
+                face.lColor = this.udtFace[lFace0].lColor;
+
+                // set the interior/exterior (just use the first face's)
+                face.udtIntersection = this.udtFace[lFace0].udtIntersection;
+
+                // the merging
+                for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
+                {
+                    face.lVertex[lVertex] = laVertices[lVertex];
+                }
+
+                // remove old polygons
+                this.DeleteFace(lFace0);
+                this.DeleteFace(lFace1);
+
+                // add the face to the CGMesh
+                this.AddFace(face, false);
+
+                // yes we did change things
+                result = true;
+            }
+
+            return result;
+        }
+
+        private void pCreateFaceEdgeData(int lFace)
+        {
+            var lEdge = new int[2];
+
+            for (int lVertex = 0; lVertex <= this.udtFace[lFace].lVertex.GetUpperBound(0); lVertex++)
+            {
+                CBO.GetEdgeCGMesh(this.udtFace[lFace], lVertex, lEdge);
+
+                // insert the edges into the collection]
+                this.colEdge.Add(lEdge[0].ToString() + "|" + lEdge[1].ToString(), lFace * 10000 + lVertex);
+            }
+
+            // udtCGMesh
+        }
+
+        private void pDeleteFaceEdgeData(int lFace)
+        {
+            var lEdge = new int[2];
+
+            // UPGRADE_TODO: (1065) Error handling statement (On Error Goto) could not be converted. More Information: http://www.vbtonet.com/ewis/ewi1065.aspx
+            // UpgradeHelpers.Helpers.NotUpgradedHelper.NotifyNotUpgradedElement("On Error Goto Label (0)");
+            for (int lVertex = 0; lVertex <= this.udtFace[lFace].lVertex.GetUpperBound(0); lVertex++)
+            {
+                CBO.GetEdgeCGMesh(this.udtFace[lFace], lVertex, lEdge);
+
+                // remove the edge from the collection
+                // ignore errors so that a second delete works just fine
+                try
+                {
+                    this.colEdge.Remove(lEdge[0].ToString() + "|" + lEdge[1].ToString());
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private void pMergeFacesOnEdge(int lFace0, int lEdge0, int lFace1, int lEdge1, ref Vector3[] cvaVertices, ref int[] laVertices)
+        {
+            int lActualVertex;
+
+            // Dim cvNormal As CSGVector
+            // reserve some space for the vertices
+            cvaVertices = new Vector3[this.udtFace[lFace0].lVertex.GetUpperBound(0) + this.udtFace[lFace1].lVertex.GetUpperBound(0)];
+            laVertices = new int[this.udtFace[lFace0].lVertex.GetUpperBound(0) + this.udtFace[lFace1].lVertex.GetUpperBound(0)];
+
+            // run through the two faces adding vertices
+            // this is gonna be confusing
+            for (int lVertexCounter = 0; lVertexCounter <= this.udtFace[lFace0].lVertex.GetUpperBound(0) - 1; lVertexCounter++)
+            {
+                // have to calculate an "actual" vertex since lVertexCounter is really
+                // just a count variable
+                lActualVertex = lVertexCounter + lEdge0 + 1;
+                if (lActualVertex > this.udtFace[lFace0].lVertex.GetUpperBound(0))
+                {
+                    lActualVertex = lActualVertex - this.udtFace[lFace0].lVertex.GetUpperBound(0) - 1;
+                }
+
+                // now get the vertex
+                cvaVertices[lVertexCounter] = this.xdtVertex[this.udtFace[lFace0].lVertex[lActualVertex]].PointXYZ;
+                laVertices[lVertexCounter] = this.udtFace[lFace0].lVertex[lActualVertex];
+
+                // 'debug.print "vertex: " & lVertexCounter, laVertices(lVertexCounter)
+            }
+
+            // now for the second face
+            for (int lVertexCounter = 0; lVertexCounter <= this.udtFace[lFace1].lVertex.GetUpperBound(0) - 1; lVertexCounter++)
+            {
+                // have to calculate an "actual" vertex since lVertexCounter is really
+                // just a count variable
+                lActualVertex = lVertexCounter + lEdge1 + 1;
+                if (lActualVertex > this.udtFace[lFace1].lVertex.GetUpperBound(0))
+                {
+                    lActualVertex = lActualVertex - this.udtFace[lFace1].lVertex.GetUpperBound(0) - 1;
+                }
+
+                // now get the vertex
+                cvaVertices[lVertexCounter + this.udtFace[lFace0].lVertex.GetUpperBound(0)] = this.xdtVertex[this.udtFace[lFace1].lVertex[lActualVertex]].PointXYZ;
+                laVertices[lVertexCounter + this.udtFace[lFace0].lVertex.GetUpperBound(0)] = this.udtFace[lFace1].lVertex[lActualVertex];
+
+                // 'debug.print "vertex: " & lVertexCounter, laVertices(lVertexCounter + cfFace0.GetPointCount - 1)
+            }
         }
 
         private void SplitEdge(int lFace, int lEdge, int lNewVertex, bool bFlagProcessed, bool bFlagSecondSplit)
@@ -1517,418 +1846,6 @@
             }
         }
 
-        private void pCreateFaceEdgeData(int lFace)
-        {
-            var lEdge = new int[2];
-
-            for (int lVertex = 0; lVertex <= this.udtFace[lFace].lVertex.GetUpperBound(0); lVertex++)
-            {
-                CBO.GetEdgeCGMesh(this.udtFace[lFace], lVertex, lEdge);
-
-                // insert the edges into the collection]
-                this.colEdge.Add(lEdge[0].ToString() + "|" + lEdge[1].ToString(), lFace * 10000 + lVertex);
-            }
-
-            // udtCGMesh
-        }
-
-        private void pDeleteFaceEdgeData(int lFace)
-        {
-            var lEdge = new int[2];
-
-            // UPGRADE_TODO: (1065) Error handling statement (On Error Goto) could not be converted. More Information: http://www.vbtonet.com/ewis/ewi1065.aspx
-            // UpgradeHelpers.Helpers.NotUpgradedHelper.NotifyNotUpgradedElement("On Error Goto Label (0)");
-            for (int lVertex = 0; lVertex <= this.udtFace[lFace].lVertex.GetUpperBound(0); lVertex++)
-            {
-                CBO.GetEdgeCGMesh(this.udtFace[lFace], lVertex, lEdge);
-
-                // remove the edge from the collection
-                // ignore errors so that a second delete works just fine
-                try
-                {
-                    this.colEdge.Remove(lEdge[0].ToString() + "|" + lEdge[1].ToString());
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        private void pMergeFacesOnEdge(
-            int lFace0, 
-            int lEdge0, 
-            int lFace1, 
-            int lEdge1, 
-            ref Vector3[] cvaVertices, 
-            ref int[] laVertices)
-        {
-            int lActualVertex;
-
-            // Dim cvNormal As CSGVector
-            // reserve some space for the vertices
-            cvaVertices =
-                new Vector3[this.udtFace[lFace0].lVertex.GetUpperBound(0) + this.udtFace[lFace1].lVertex.GetUpperBound(0)];
-            laVertices = new int[this.udtFace[lFace0].lVertex.GetUpperBound(0) + this.udtFace[lFace1].lVertex.GetUpperBound(0)];
-
-            // run through the two faces adding vertices
-            // this is gonna be confusing
-            for (int lVertexCounter = 0; lVertexCounter <= this.udtFace[lFace0].lVertex.GetUpperBound(0) - 1; lVertexCounter++)
-            {
-                // have to calculate an "actual" vertex since lVertexCounter is really
-                // just a count variable
-                lActualVertex = lVertexCounter + lEdge0 + 1;
-                if (lActualVertex > this.udtFace[lFace0].lVertex.GetUpperBound(0))
-                {
-                    lActualVertex = lActualVertex - this.udtFace[lFace0].lVertex.GetUpperBound(0) - 1;
-                }
-
-                // now get the vertex
-                cvaVertices[lVertexCounter] = this.xdtVertex[this.udtFace[lFace0].lVertex[lActualVertex]].PointXYZ;
-                laVertices[lVertexCounter] = this.udtFace[lFace0].lVertex[lActualVertex];
-
-                // 'debug.print "vertex: " & lVertexCounter, laVertices(lVertexCounter)
-            }
-
-            // now for the second face
-            for (int lVertexCounter = 0; lVertexCounter <= this.udtFace[lFace1].lVertex.GetUpperBound(0) - 1; lVertexCounter++)
-            {
-                // have to calculate an "actual" vertex since lVertexCounter is really
-                // just a count variable
-                lActualVertex = lVertexCounter + lEdge1 + 1;
-                if (lActualVertex > this.udtFace[lFace1].lVertex.GetUpperBound(0))
-                {
-                    lActualVertex = lActualVertex - this.udtFace[lFace1].lVertex.GetUpperBound(0) - 1;
-                }
-
-                // now get the vertex
-                cvaVertices[lVertexCounter + this.udtFace[lFace0].lVertex.GetUpperBound(0)] =
-                    this.xdtVertex[this.udtFace[lFace1].lVertex[lActualVertex]].PointXYZ;
-                laVertices[lVertexCounter + this.udtFace[lFace0].lVertex.GetUpperBound(0)] = this.udtFace[lFace1].lVertex[lActualVertex];
-
-                // 'debug.print "vertex: " & lVertexCounter, laVertices(lVertexCounter + cfFace0.GetPointCount - 1)
-            }
-        }
-
-        // *********************************************************************************
-        // Private Methods
-        // *********************************************************************************
-        // *********************************************************************************
-        // Purpose:
-        // Parameters:
-        // *********************************************************************************
-        private bool pbDeTessellateProcess(int lFace0, int lEdge0, int lFace1, int lEdge1)
-        {
-            bool result = false;
-            Vector3[] cvaVertices = null;
-            int[] laVertices = null;
-            var cvaFacet = new Vector3[3];
-            int lColinearVertex = 0;
-            var laCompanionFaces = new int[2];
-            var laCompanionEdges = new int[2];
-            var laMatchingEdges = new int[2];
-            int lMatchedEdge = 0;
-            int lMatchedFace = 0;
-            CBODataTypes.CSGCGFace face = CBODataTypes.CSGCGFace.CreateInstance();
-            var laColinearFacet = new int[3];
-            var laFacet = new int[3];
-            var laEdge = new int[2];
-            int lColinearFacet = 0;
-
-            // Dim lFaceMax            As Long
-
-            // merge the faces (as an array)
-            this.pMergeFacesOnEdge(lFace0, lEdge0, lFace1, lEdge1, ref cvaVertices, ref laVertices);
-
-            // see if we have any facets that are colinear
-            int lColinearFacetCount = 0;
-            for (int lVertex = 0; lVertex <= cvaVertices.GetUpperBound(0); lVertex++)
-            {
-                Helper.GetFacet(cvaVertices, lVertex, cvaFacet);
-
-                // are we co-linear and convex
-                if (Helper.bCoLinear(cvaFacet))
-                {
-                    // And bConvex(cvaFacet) Then
-                    lColinearFacetCount++;
-                    lColinearVertex = laVertices[lVertex];
-                    lColinearFacet = lVertex;
-                    Helper.GetFacet2(laVertices, lVertex, laColinearFacet);
-                }
-
-                // if we have more than one colinear facet then no need to look further
-                if (lColinearFacetCount > 1)
-                {
-                    break;
-                }
-            }
-
-            // if we have only one colinear facet we can be pretty sure that
-            // we can merge the colinear facet into a single edge
-            if (lColinearFacetCount == 1)
-            {
-                // if we are removing a facet, there must be two
-                // companion polygons that share this facet. these companion
-                // polygons will have to be merged on the facet also.
-                // note that we don't check for the faces being co-planar because
-                // we are ASSUMMING that we are detessellating because we have
-                // TRIANGLES and two triangles that can be merged such that
-                // they produce a colinear edge, must have been co-planar.
-                // get the facet that is colinear
-                Helper.GetFacet2(laVertices, lColinearFacet, laFacet);
-
-                // find companion faces
-                bool bCompanionsFound = false;
-                laEdge[0] = laFacet[0];
-                laEdge[1] = laFacet[1];
-                if (this.bMatchEdgeCGMesh(laEdge, ref laCompanionFaces[0], ref laCompanionEdges[0]))
-                {
-                    laEdge[0] = laFacet[1];
-                    laEdge[1] = laFacet[2];
-                    if (this.bMatchEdgeCGMesh(laEdge, ref laCompanionFaces[1], ref laCompanionEdges[1]))
-                    {
-                        // see if the companion faces join on an edge. If so, then we have
-                        // companions that will likely create a convex polygon when merged
-                        // the easiest way is to run through the edges of one, finding the
-                        // matching edges. if one of the matching edges is part of the
-                        // other companion then we found it
-                        for (int lVertex = 0; lVertex <= this.udtFace[laCompanionFaces[0]].lVertex.GetUpperBound(0); lVertex++)
-                        {
-                            CBO.GetEdgeCGMesh(this.udtFace[laCompanionFaces[0]], lVertex, laEdge);
-
-                            // have matched an edge
-                            if (this.bMatchEdgeCGMesh(laEdge, ref lMatchedFace, ref lMatchedEdge))
-                            {
-                                // have we found it
-                                if (lMatchedFace == laCompanionFaces[1])
-                                {
-                                    // found it
-                                    bCompanionsFound = true;
-                                    laMatchingEdges[0] = lVertex;
-                                    laMatchingEdges[1] = lMatchedEdge;
-
-                                    // ensure that the new potential new edge doesn't already exist within the CGMesh
-                                    // this is really a hack - in a truly closed shape this
-                                    // shouldn't happen, but sometimes we get so odd arrangements
-                                    // when we hack and shape closed
-                                    laEdge[0] = laColinearFacet[0];
-                                    laEdge[1] = laColinearFacet[2];
-                                    if (this.bMatchEdgeCGMesh(laEdge, ref lMatchedFace, ref lMatchedEdge) && lMatchedFace != lFace0
-                                        && lMatchedFace != lFace1)
-                                    {
-                                        // didn't find it
-                                        bCompanionsFound = false;
-                                    }
-
-                                    // Stop 'found it
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (bCompanionsFound)
-                {
-                    // test that the merged faces will be convex
-                    // the test merge
-                    // and ensure it is convex
-                    var cvaTestMerge = new Vector3[cvaVertices.GetUpperBound(0)];
-                    int lActualVertex = 0;
-                    for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
-                    {
-                        if (laVertices[lVertex] != lColinearVertex)
-                        {
-                            cvaTestMerge[lActualVertex] = cvaVertices[lVertex];
-                            lActualVertex++;
-                        }
-                    }
-
-                    if (Helper.bConvex(cvaTestMerge, false))
-                    {
-                        // merge the companion faces (as an array)
-                        this.pMergeFacesOnEdge(
-                            laCompanionFaces[0], 
-                            laMatchingEdges[0], 
-                            laCompanionFaces[1], 
-                            laMatchingEdges[1], 
-                            ref cvaVertices, 
-                            ref laVertices);
-
-                        // the test merging
-                        cvaTestMerge = new Vector3[cvaVertices.GetUpperBound(0)];
-                        lActualVertex = 0;
-                        for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
-                        {
-                            if (laVertices[lVertex] != lColinearVertex)
-                            {
-                                cvaTestMerge[lActualVertex] = cvaVertices[lVertex];
-                                lActualVertex++;
-                            }
-                        }
-
-                        if (Helper.bConvex(cvaTestMerge, false))
-                        {
-                            // merge the faces (as an array)
-                            this.pMergeFacesOnEdge(lFace0, lEdge0, lFace1, lEdge1, ref cvaVertices, ref laVertices);
-
-                            // merge the two faces (for real)
-                            // create the new face
-                            CBO.CreateFace(ref face, laVertices.GetUpperBound(0) - 1);
-
-                            // set the color (just use the first face's color)
-                            face.lColor = this.udtFace[lFace0].lColor;
-
-                            // set the interior/exterior (just use the first face's)
-                            face.udtIntersection = this.udtFace[lFace0].udtIntersection;
-
-                            // the merging
-                            lActualVertex = 0;
-                            for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
-                            {
-                                if (laVertices[lVertex] != lColinearVertex)
-                                {
-                                    // this.udtFace(lFaceMax).lVertex(lActualVertex) = laVertices(lVertex)
-                                    face.lVertex[lActualVertex] = laVertices[lVertex];
-                                    lActualVertex++;
-                                }
-                            }
-
-                            // remove old polygons
-                            this.DeleteFace(lFace0);
-                            this.DeleteFace(lFace1);
-
-                            // add the merged face to the CGMesh
-                            this.AddFace(face, false);
-
-                            // merge the companion faces (as an array)
-                            this.pMergeFacesOnEdge(
-                                laCompanionFaces[0], 
-                                laMatchingEdges[0], 
-                                laCompanionFaces[1], 
-                                laMatchingEdges[1], 
-                                ref cvaVertices, 
-                                ref laVertices);
-
-                            // merge the two faces (for real)
-                            // create the new face
-                            CBO.CreateFace(ref face, laVertices.GetUpperBound(0) - 1);
-
-                            // set the color (just use the first face's color)
-                            face.lColor = this.udtFace[laCompanionFaces[0]].lColor;
-
-                            // set the interior/exterior (just use the first face's)
-                            face.udtIntersection = this.udtFace[laCompanionFaces[0]].udtIntersection;
-
-                            // the merging
-                            lActualVertex = 0;
-                            for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
-                            {
-                                if (laVertices[lVertex] != lColinearVertex)
-                                {
-                                    // this.udtFace(lFaceMax).lVertex(lActualVertex) = laVertices(lVertex)
-                                    face.lVertex[lActualVertex] = laVertices[lVertex];
-                                    lActualVertex++;
-                                }
-                            }
-
-                            // remove old polygons
-                            this.DeleteFace(laCompanionFaces[0]);
-                            this.DeleteFace(laCompanionFaces[1]);
-
-                            // add the face to the CGMesh
-                            this.AddFace(face, false);
-
-                            // yes we did change things
-                            result = true;
-                        }
-                    }
-                }
-
-                // if we have none, and the polygon is convex then the merge is OK
-            }
-            else if (lColinearFacetCount == 0)
-            {
-                if (Helper.bConvex(cvaVertices, false))
-                {
-                    // merge the two faces (for real)
-                    // create the new face
-                    CBO.CreateFace(ref face, laVertices.GetUpperBound(0));
-
-                    // set the color (just use the first face's color)
-                    face.lColor = this.udtFace[lFace0].lColor;
-
-                    // set the interior/exterior (just use the first face's)
-                    face.udtIntersection = this.udtFace[lFace0].udtIntersection;
-
-                    // the merging
-                    for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
-                    {
-                        face.lVertex[lVertex] = laVertices[lVertex];
-                    }
-
-                    // remove old polygons
-                    this.DeleteFace(lFace0);
-                    this.DeleteFace(lFace1);
-
-                    // add the face to the CGMesh
-                    this.AddFace(face, false);
-
-                    // yes we did change things
-                    result = true;
-                }
-            }
-
-            return result;
-        }
-
-        // *********************************************************************************
-        // Purpose:
-        // Parameters:
-        // *********************************************************************************
-        private bool pbDeTessellateProcessQuick(int lFace0, int lEdge0, int lFace1, int lEdge1)
-        {
-            bool result = false;
-            Vector3[] cvaVertices = null;
-            int[] laVertices = null;
-            CBODataTypes.CSGCGFace face = CBODataTypes.CSGCGFace.CreateInstance();
-
-            // Dim lFaceMax      As Long
-
-            // merge the faces (as an array)
-            this.pMergeFacesOnEdge(lFace0, lEdge0, lFace1, lEdge1, ref cvaVertices, ref laVertices);
-            if (Helper.bConvex(cvaVertices, true))
-            {
-                // merge the two faces (for real)
-                // create the new face
-                CBO.CreateFace(ref face, laVertices.GetUpperBound(0));
-
-                // set the color (just use the first face's color)
-                face.lColor = this.udtFace[lFace0].lColor;
-
-                // set the interior/exterior (just use the first face's)
-                face.udtIntersection = this.udtFace[lFace0].udtIntersection;
-
-                // the merging
-                for (int lVertex = 0; lVertex <= laVertices.GetUpperBound(0); lVertex++)
-                {
-                    face.lVertex[lVertex] = laVertices[lVertex];
-                }
-
-                // remove old polygons
-                this.DeleteFace(lFace0);
-                this.DeleteFace(lFace1);
-
-                // add the face to the CGMesh
-                this.AddFace(face, false);
-
-                // yes we did change things
-                result = true;
-            }
-
-            return result;
-        }
-
-        #endregion
-
         public struct CSGCGPick
         {
             #region Fields
@@ -1945,6 +1862,10 @@
 
             #endregion
         }
+
+        // EdgeHashTableType As Long
+
+        // EdgeHashTable() As Long
 
         // #endregion
     }

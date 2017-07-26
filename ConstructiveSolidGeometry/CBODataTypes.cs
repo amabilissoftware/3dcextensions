@@ -1,39 +1,36 @@
 namespace ACBO
 {
-    using SharpDX;
     using System;
+
+    using SharpDX;
 
     public class CBODataTypes
     {
-        #region Enums
-
         public enum CSGFaceType
         {
-            CSGFaceUnknown = 0, 
+            CSGFaceUnknown = 0,
 
-            CSGFaceInterior = 1, 
+            CSGFaceInterior = 1,
 
             CSGFaceExterior = 2
         }
 
         public enum CSGToolOperation
         {
-            CSGToolOpUnion = 0, 
+            CSGToolOpUnion = 0,
 
-            CSGToolOpIntersection = 1, 
+            CSGToolOpIntersection = 1,
 
-            CSGToolOpDifference = 2, 
+            CSGToolOpDifference = 2,
 
-            CSGToolOpBlend = 3, 
+            CSGToolOpBlend = 3,
 
-            CSGToolOpBridge = 4, 
+            CSGToolOpBridge = 4,
 
-            CSGToolOpMerge = 5, 
+            CSGToolOpMerge = 5,
 
             CSGToolOpCut = 6
         }
-
-        #endregion
 
         public struct CSGCGFace
         {
