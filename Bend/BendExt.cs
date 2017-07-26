@@ -21,7 +21,7 @@
     // This type of operation is "volume" based. 3DC determins which points are
     // in the volume and all you, as the programmer, need do is manipulate the points
     // provided. You neednt worry about the direction of the operation since 3DC
-    // transforms the object such that to you it is always up (Y = 1).
+    // transforms the shape such that to you it is always up (Y = 1).
     // If this is a "directional" function you will also be provided with the "strength"
     // of the effect on each point. This "strength" is between 0 and 1. This is the
     // distance from the root of the operation volume.
@@ -31,13 +31,13 @@
     // Note1 : Operations are a very restricted plug-in class. Operations have to be
     // "reapplyable" in order to support layer changes and animation. As a result
     // changes to the scene structure cant be supported.For example if you created
-    // a new object and new group a reapply would result in the object and group
-    // being re-created without the object and group from the previous application
-    // being deleted. This would result in multiple objects and groups being created
-    // even though the operation only intended to create one object and group.
-    // Operations can only operate on the object sent. They cant affect its group
+    // a new shape and new group a reapply would result in the shape and group
+    // being re-created without the shape and group from the previous application
+    // being deleted. This would result in multiple shapes and groups being created
+    // even though the operation only intended to create one shape and group.
+    // Operations can only operate on the shape sent. They cant affect its group
     // in any way. The only case where an operation affects group location is when
-    // applied to a hierarchy or group of objects. In this very specific case
+    // applied to a hierarchy or group of shapes. In this very specific case
     // it is 3DC that is making the change and only in a very specific manner.
     // *********************************************************************************
 
@@ -162,11 +162,6 @@
             ref string userDataString,
             CSGTexture texture)
         {
-            CSGVector point2 = new CSGVector();
-            CSGVector[] pointList = null;
-            int pointListCount = 0;
-            var functions = new CSGFunctions();
-
             // we only have something to do if there is an actual bend angle
             if (userDataSingles[13] != 0)
             {
@@ -195,7 +190,9 @@
                 axis.Y = 0;
                 axis.Z = -1;
 
-                // get the object's points
+                // get the shape's points
+                CSGVector[] pointList = null;
+                int pointListCount = 0;
                 selectedShape.GetPointsXYZ(ref pointList, ref pointListCount);
 
                 // run through the points and move 'em
@@ -204,6 +201,8 @@
                 // SelectionItemsEffect is the "power" of the effect for each affected point. For a
                 // directional operation this starts at the "base" (0) of the control and reaches 1 at
                 // the top (and beyond)
+                var csgFunctions = new CSGFunctions();
+                var point2 = new CSGVector();
                 var selection = selectedShape.GetSubSelection(deviceId);
                 for (int pointId = 0; pointId < selection.ItemListCount; pointId++)
                 {
@@ -212,9 +211,9 @@
                     point.X = -(radius - pointList[primary].X);
                     point.Y = pointList[primary].Y - effectLength * selection.ItemList[pointId].OperationControlEffect;
                     point.Z = pointList[primary].Z;
-                    var vectorLength = functions.VectorModulus(ref point);
-                    functions.VectorRotate(ref point2, ref point, ref axis, selection.ItemList[pointId].OperationControlEffect * userDataSingles[13] / 180 * (float)Math.PI);
-                    functions.VectorScale(ref point, ref point2, vectorLength);
+                    var vectorLength = csgFunctions.VectorModulus(ref point);
+                    csgFunctions.VectorRotate(ref point2, ref point, ref axis, selection.ItemList[pointId].OperationControlEffect * userDataSingles[13] / 180 * (float)Math.PI);
+                    csgFunctions.VectorScale(ref point, ref point2, vectorLength);
                     pointList[primary].X = point.X + radius;
                     pointList[primary].Y = point.Y;
                     pointList[primary].Z = point.Z;
