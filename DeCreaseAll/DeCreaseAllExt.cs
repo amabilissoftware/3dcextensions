@@ -55,10 +55,7 @@
             ref int validMinShapeSubSelection,
             ref int validMaxShapeSubSelection)
         {
-            validMinComponents = 0;
-            validMaxComponents = 999;
-            validMinShapeSubSelection = 0;
-            validMaxShapeSubSelection = 999;
+            validMaxComponents = 0;
         }
     }
 }
