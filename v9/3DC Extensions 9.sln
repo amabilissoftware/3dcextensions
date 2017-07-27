@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutodeskFBX", "AutoDeskFBX\AutodeskFBX.csproj", "{1F31F357-4C87-4B72-8D73-70C7729268C2}"
 EndProject
@@ -48,7 +48,6 @@ Global
 		{EF8054D7-4104-4CD4-B013-AC02CE57AA6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF8054D7-4104-4CD4-B013-AC02CE57AA6F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EF8054D7-4104-4CD4-B013-AC02CE57AA6F}.Release|x86.ActiveCfg = Release|x86
-		{EF8054D7-4104-4CD4-B013-AC02CE57AA6F}.Release|x86.Build.0 = Release|x86
 		{83AB1439-0386-492B-B629-F5CD2398B9FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{83AB1439-0386-492B-B629-F5CD2398B9FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83AB1439-0386-492B-B629-F5CD2398B9FB}.Debug|x86.ActiveCfg = Debug|x86
