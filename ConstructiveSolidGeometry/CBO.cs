@@ -288,8 +288,8 @@ namespace ACBO
             // reserve space for the face vertices and bounding plane information
             udtFace.lVertex = new int[lVertexMax + 1];
             udtFace.lEdgeProcessed = new int[lVertexMax + 1];
-            udtFace.cvEdgeBoundingPlaneNormal = new Vector3[lVertexMax + 1];
-            udtFace.cvEdgeBoundingPlanePoint = new Vector3[lVertexMax + 1];
+            //udtFace.cvEdgeBoundingPlaneNormal = new Vector3[lVertexMax + 1];
+            //udtFace.cvEdgeBoundingPlanePoint = new Vector3[lVertexMax + 1];
 
             // set to a default color of white
             udtFace.lColor = -1;

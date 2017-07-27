@@ -38,9 +38,9 @@ namespace ACBO
 
             public bool bDeleted; // has the face been deleted
 
-            public Vector3[] cvEdgeBoundingPlaneNormal; // the edge's bounding plane normal
+            //public Vector3[] cvEdgeBoundingPlaneNormal; // the edge's bounding plane normal
 
-            public Vector3[] cvEdgeBoundingPlanePoint; // point on the the edge's bounding plane
+            //public Vector3[] cvEdgeBoundingPlanePoint; // point on the the edge's bounding plane
 
             public Vector3 cvNormal; // the face's normal
 

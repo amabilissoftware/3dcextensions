@@ -500,7 +500,7 @@
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:..\\..\\..\\..\\3DCrafter 10.1\\Extensions\\AutodeskFBXExt.dll"
+            "SourcePath" = "8:..\\..\\..\\..\\3D Crafter 10.1\\Extensions\\AutodeskFBXExt.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_4029522EF6EB48AAB5B83D615451949B"
@@ -531,7 +531,7 @@
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:..\\..\\..\\..\\3DCrafter 10.1\\Extensions\\ColladaDAEExt.dll"
+            "SourcePath" = "8:..\\..\\..\\..\\3D Crafter 10.1\\Extensions\\ColladaDAEExt.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_4029522EF6EB48AAB5B83D615451949B"
@@ -562,7 +562,7 @@
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:..\\..\\..\\..\\3DCrafter 10.1\\Extensions\\DeCreaseAllExt.dll"
+            "SourcePath" = "8:..\\..\\..\\..\\3D Crafter 10.1\\Extensions\\DeCreaseAllExt.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_4029522EF6EB48AAB5B83D615451949B"
@@ -695,7 +695,7 @@
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:..\\..\\..\\..\\3DCrafter 10.1\\Extensions\\AliasOBJExt.dll"
+            "SourcePath" = "8:..\\..\\..\\..\\3D Crafter 10.1\\Extensions\\AliasOBJExt.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_4029522EF6EB48AAB5B83D615451949B"
@@ -1052,7 +1052,7 @@
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:..\\..\\..\\..\\3DCrafter 10.1\\Extensions\\AutoCADDXFExt.dll"
+            "SourcePath" = "8:..\\..\\..\\..\\3D Crafter 10.1\\Extensions\\AutoCADDXFExt.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_4029522EF6EB48AAB5B83D615451949B"
@@ -1217,7 +1217,7 @@
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
         "ProductVersion" = "8:10.1.1"
-        "Manufacturer" = "8:3DCrafter 10.1"
+        "Manufacturer" = "8:3D Crafter 10.1"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
         "Title" = "8:3DC Extensions Installer"

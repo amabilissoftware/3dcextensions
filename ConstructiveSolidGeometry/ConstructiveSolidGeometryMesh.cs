@@ -661,8 +661,8 @@
             {
                 this.udtBoundingFace[lFace].lVertex = new int[4];
                 this.udtBoundingFace[lFace].lEdgeProcessed = new int[4];
-                this.udtBoundingFace[lFace].cvEdgeBoundingPlaneNormal = new Vector3[4];
-                this.udtBoundingFace[lFace].cvEdgeBoundingPlanePoint = new Vector3[4];
+                //this.udtBoundingFace[lFace].cvEdgeBoundingPlaneNormal = new Vector3[4];
+                //this.udtBoundingFace[lFace].cvEdgeBoundingPlanePoint = new Vector3[4];
             }
 
             // add the 4 bounding vertices on the minimum Y plane
@@ -954,8 +954,8 @@
                 {
                     Array.Resize(ref face.lVertex, lActualVertexCount);
                     Array.Resize(ref face.lEdgeProcessed, lActualVertexCount);
-                    Array.Resize(ref face.cvEdgeBoundingPlaneNormal, lActualVertexCount);
-                    Array.Resize(ref face.cvEdgeBoundingPlanePoint, lActualVertexCount);
+                    //Array.Resize(ref face.cvEdgeBoundingPlaneNormal, lActualVertexCount);
+                    //Array.Resize(ref face.cvEdgeBoundingPlanePoint, lActualVertexCount);
                 }
 
                 // get the color
@@ -1093,10 +1093,10 @@
                 cvaBoundingPolygon[2].Z = cvaEdge[0].Z + udtFace.cvNormal.Z;
 
                 // point on the plane //cvaBoundingPolygon(2&)
-                udtFace.cvEdgeBoundingPlanePoint[lVertex] = cvaEdge[0];
+                //udtFace.cvEdgeBoundingPlanePoint[lVertex] = cvaEdge[0];
 
                 // plane normal
-                udtFace.cvEdgeBoundingPlaneNormal[lVertex] = Helper.cvGetNormal(cvaBoundingPolygon);
+                //udtFace.cvEdgeBoundingPlaneNormal[lVertex] = Helper.cvGetNormal(cvaBoundingPolygon);
             }
         }
 
