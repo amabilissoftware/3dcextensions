@@ -288,7 +288,7 @@
                     {
                         foreach (var facePoint in face.PointList)
                         {
-                            long fbxPointKey = facePoint.PointID << 42 | facePoint.NormalID << 21 | facePoint.TextureCoordinateListID[0];
+                            long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
                             CSGVectorLong fbxPoint;
                             if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
                             {
@@ -342,7 +342,7 @@
                         fbxMesh.BeginPolygon(materialId, -1, -1, true);
                         foreach (var facePoint in face.PointList.Reverse())
                         {
-                            long fbxPointKey = facePoint.PointID << 42 | facePoint.NormalID << 21 | facePoint.TextureCoordinateListID[0];
+                            long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
                             if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
                             {
                                 fbxMesh.AddPolygon(fbxPointId, fbxPointId);
