@@ -231,12 +231,16 @@
         // *********************************************************************************
         public void GetParameters(CSG sceneGraph, int version, CSGSelectionType selectionType, ref CSGParameter[] parameters)
         {
+            var csgFunctions = new CSGFunctions();
+            var appTitle = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+
             parameters = new CSGParameter[2];
 
             // Operation Control
             // note that if you have paramater of type "CSGOperationControlDirectional" or
             // "CSGOperationControl" a total of 13 (0-12) UserDataSingles are dedicated to it for internal use
-            // this means your next available parameter must be the CSGOperationControl// s UserDataSinglesEntry+13
+            // this means your next available parameter must be the CSGOperationControl
+            // is UserDataSinglesEntry+13
             // as is the Bend angle below
             // note that we don't have to add the "dropdownlistentries" since 3DC will do that for us
             // since it KNOWS what applies to what
@@ -248,9 +252,8 @@
             parameters[0].Default = 0;
             parameters[0].NumberMinimum = 0;
             parameters[0].NumberMaximum = 2;
-            // Parameters[0].UserDefault = GetSetting(SceneGraph.ApplicationState.ApplicationRegistryKey, App.Title, Parameters[0].Title, Parameters[0].Default);
-            parameters[0].UserDefault = parameters[0].Default; // user default relies on registry storage so it doesn't work in .NET operations
-
+            parameters[0].UserDefault = Convert.ToSingle(csgFunctions.GetRegistrySetting(appTitle, parameters[0].Title, Convert.ToString(parameters[0].Default)));
+            
             // Bend Angle
             parameters[1].Type = CSGParameterType.CSGNumber;
             parameters[1].Title = "Angle";
@@ -261,8 +264,7 @@
             parameters[1].NumberMinimum = -99999999;
             parameters[1].NumberMaximum = 99999999;
             parameters[1].Increment = 10;
-            // Parameters[1].UserDefault = GetSetting(SceneGraph.ApplicationState.ApplicationRegistryKey, App.Title, Parameters[1].Title, Parameters[1].Default);
-            parameters[1].UserDefault = parameters[1].Default; // user default relies on registry storage so it doesn't work in .NET operations
+            parameters[1].UserDefault = Convert.ToSingle(csgFunctions.GetRegistrySetting(appTitle, parameters[1].Title, Convert.ToString(parameters[1].Default)));
 
         }
 
