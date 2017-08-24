@@ -77,48 +77,48 @@
 
             Debug.WriteLine("FBX file format version for this FBX SDK is {0}.{1}.{2}", sdkMajor, sdkMinor, sdkRevision);
 
-            if (lImporter.IsFBX())
-            {
-                // Debug.WriteLine("FBX file format version for file '%s' is %d.%d.%d\n\n", pFilename, lFileMajor, lFileMinor, lFileRevision);
+            //if (lImporter.IsFBX())
+            //{
+            //    // Debug.WriteLine("FBX file format version for file '%s' is %d.%d.%d\n\n", pFilename, lFileMajor, lFileMinor, lFileRevision);
 
-                // From this point, it is possible to access animation stack information without
-                // the expense of loading the entire file.
-                Debug.WriteLine("Animation Stack Information");
+            //    // From this point, it is possible to access animation stack information without
+            //    // the expense of loading the entire file.
+            //    Debug.WriteLine("Animation Stack Information");
 
-                var lAnimStackCount = lImporter.GetAnimStackCount();
+            //    var lAnimStackCount = lImporter.GetAnimStackCount();
 
-                Debug.WriteLine("    Number of Animation Stacks: {0}", lAnimStackCount);
-                Debug.WriteLine("    Current Animation Stack: {0}", lImporter.GetActiveAnimStackName());
+            //    Debug.WriteLine("    Number of Animation Stacks: {0}", lAnimStackCount);
+            //    Debug.WriteLine("    Current Animation Stack: {0}", lImporter.GetActiveAnimStackName());
 
-                int i;
-                for (i = 0; i < lAnimStackCount; i++)
-                {
-                    // FbxTakeInfo lTakeInfo = lImporter.GetTakeInfo(i);
+            //    int i;
+            //    for (i = 0; i < lAnimStackCount; i++)
+            //    {
+            //        // FbxTakeInfo lTakeInfo = lImporter.GetTakeInfo(i);
 
-                    // Debug.WriteLine("    Animation Stack %d\n", i);
-                    // Debug.WriteLine("         Name: \"%s\"\n", lTakeInfo.mName.Buffer());
-                    // Debug.WriteLine("         Description: \"%s\"\n", lTakeInfo.mDescription.Buffer());
+            //        // Debug.WriteLine("    Animation Stack %d\n", i);
+            //        // Debug.WriteLine("         Name: \"%s\"\n", lTakeInfo.mName.Buffer());
+            //        // Debug.WriteLine("         Description: \"%s\"\n", lTakeInfo.mDescription.Buffer());
 
-                    //// Change the value of the import name if the animation stack should be imported
-                    //// under a different name.
-                    // Debug.WriteLine("         Import Name: \"%s\"\n", lTakeInfo.mImportName.Buffer());
+            //        //// Change the value of the import name if the animation stack should be imported
+            //        //// under a different name.
+            //        // Debug.WriteLine("         Import Name: \"%s\"\n", lTakeInfo.mImportName.Buffer());
 
-                    //// Set the value of the import state to false if the animation stack should be not
-                    //// be imported.
-                    // Debug.WriteLine("         Import State: %s\n", lTakeInfo.mSelect ? "true" : "false");
-                    // Debug.WriteLine("\n");
-                }
+            //        //// Set the value of the import state to false if the animation stack should be not
+            //        //// be imported.
+            //        // Debug.WriteLine("         Import State: %s\n", lTakeInfo.mSelect ? "true" : "false");
+            //        // Debug.WriteLine("\n");
+            //    }
 
-                //// Set the import states. By default, the import states are always set to
-                //// true. The code below shows how to change these states.
-                // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_MATERIAL, true);
-                // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_TEXTURE, true);
-                // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_LINK, true);
-                // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_SHAPE, true);
-                // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_GOBO, true);
-                // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_ANIMATION, true);
-                // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_GLOBAL_SETTINGS, true);
-            }
+            //    //// Set the import states. By default, the import states are always set to
+            //    //// true. The code below shows how to change these states.
+            //    // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_MATERIAL, true);
+            //    // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_TEXTURE, true);
+            //    // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_LINK, true);
+            //    // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_SHAPE, true);
+            //    // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_GOBO, true);
+            //    // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_ANIMATION, true);
+            //    // (*(pManager.GetIOSettings())).SetBoolProp(IMP_FBX_GLOBAL_SETTINGS, true);
+            //}
 
             // Import the scene.
             var lStatus = lImporter.Import(pScene);

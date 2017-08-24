@@ -1,7 +1,20 @@
-﻿namespace AutoDeskFBXSDK
+﻿using ArcManagedFBX;
+using System.Diagnostics;
+
+namespace AutoDeskFBXSDK
 {
-    public class Import
+    public class Importer
     {
+        public void Import(string fileName)
+        {
+            Common.InitializeSdkObjects("Import Scene", out FBXManager managerInstance, out FBXScene fbxScene);
+
+            if (Common.LoadScene(managerInstance, fbxScene, fileName))
+            {
+                Debugger.Break();
+            }
+            //Debugger.Break();
+        }
         // Coming Soon! - This is what I'll probably be using as a base:
 
         // Option Explicit

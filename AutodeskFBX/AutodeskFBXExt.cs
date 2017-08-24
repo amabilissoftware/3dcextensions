@@ -56,7 +56,7 @@
         /// <summary>
         ///   Gets a value indicating whether imports are supported.
         /// </summary>
-        public bool SupportImport => false;
+        public bool SupportImport => true;
 
         public void Export(
             string filename,
@@ -80,7 +80,8 @@
             ref int[] userDataInts,
             ref string userDataString)
         {
-            // if importing, set SupportImport to return true and add your import code
+            Importer importer = new Importer();
+            importer.Import(importFileName);
         }
     }
 }
