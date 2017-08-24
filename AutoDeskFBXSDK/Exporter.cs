@@ -174,22 +174,29 @@
 
         private void ExportGroupShapes(CSGGroup group, FBXScene fbxScene, FBXNode sceneNode, string groupName, FBXNode node)
         {
+            int exportedShapeCount = 0;
             CSGShapeArray childShapeList = group.GetShapes();
             for (int shapeIndex = 0; shapeIndex < childShapeList.GetSize(); shapeIndex++)
             {
-                // this little bit of weirdness is due to View3D and Paint3D not being able to have multiple shapes on the same node
-                // there may need to be an export option for this at some point
-                var subnode = node;
-                if (shapeIndex > 0)
+                var shape = childShapeList.GetElement(shapeIndex);
+                if (shape.RepresentativeEntityType == CSGEntityType.CSGEShape && shape.ShapeType == CSGShapeType.CSGShapeStandard && shape.GetFaceCount() > 0)
                 {
-                    string subGroupName = this.GetUniqueName(groupName + "_" + shapeIndex.ToString(), "group");
+                    // this little bit of weirdness is due to View3D and Paint3D not being able to have multiple shapes on the same node
+                    // there may need to be an export option for this at some point
+                    var subnode = node;
+                    if (exportedShapeCount > 0)
+                    {
+                        string subGroupName = this.GetUniqueName(groupName + "_" + shapeIndex.ToString(), "group");
 
-                    subnode = FBXNode.Create(sceneNode, subGroupName);
-                    node.AddChild(subnode);
+                        subnode = FBXNode.Create(sceneNode, subGroupName);
+                        node.AddChild(subnode);
+                    }
+
+                    this.ExportShape(fbxScene, subnode, shape);
+                    subnode.SetShadingMode(ArcManagedFBX.Types.EShadingMode.eTextureShading);
+
+                    exportedShapeCount++;
                 }
-
-                this.ExportShape(fbxScene, subnode, childShapeList.GetElement(shapeIndex));
-                subnode.SetShadingMode(ArcManagedFBX.Types.EShadingMode.eTextureShading);
             }
         }
 
@@ -255,111 +262,108 @@
 
         private void ExportShape(FBXScene fbxScene, FBXNode parentNode, CSGShape shape)
         {
-            if (shape.RepresentativeEntityType == CSGEntityType.CSGEShape && shape.ShapeType == CSGShapeType.CSGShapeStandard && shape.GetFaceCount() > 0)
+            Dictionary<long, int> fbxPointIdList = new Dictionary<long, int>();
+            List<CSGVectorLong> fbxPointList = new List<CSGVectorLong>();
+
+            CSGVector[] pointList = null;
+            int pointListCount = 0;
+            CSGVector[] normalList = null;
+            int normalListCount = 0;
+            CSGUV[] textureCoordinateList = null;
+            int textureCoordinateListCount = 0;
+            CSGMaterialFaceList[] materialFaceList = null;
+            int materialFaceListCount = 0;
+            shape.GetGeometryMaterialSorted(
+                true,
+                false,
+                true,
+                ref pointList,
+                ref pointListCount,
+                ref normalList,
+                ref normalListCount,
+                ref textureCoordinateList,
+                ref textureCoordinateListCount,
+                ref materialFaceList,
+                ref materialFaceListCount);
+
+            foreach (var material in materialFaceList)
             {
-                Dictionary<long, int> fbxPointIdList = new Dictionary<long, int>();
-                List<CSGVectorLong> fbxPointList = new List<CSGVectorLong>();
-
-                CSGVector[] pointList = null;
-                int pointListCount = 0;
-                CSGVector[] normalList = null;
-                int normalListCount = 0;
-                CSGUV[] textureCoordinateList = null;
-                int textureCoordinateListCount = 0;
-                CSGMaterialFaceList[] materialFaceList = null;
-                int materialFaceListCount = 0;
-                shape.GetGeometryMaterialSorted(
-                    true,
-                    false,
-                    true,
-                    ref pointList,
-                    ref pointListCount,
-                    ref normalList,
-                    ref normalListCount,
-                    ref textureCoordinateList,
-                    ref textureCoordinateListCount,
-                    ref materialFaceList,
-                    ref materialFaceListCount);
-
-                foreach (var material in materialFaceList)
+                this.ExportMaterial(fbxScene, parentNode, material.Material);
+                foreach (var face in material.FaceList)
                 {
-                    this.ExportMaterial(fbxScene, parentNode, material.Material);
-                    foreach (var face in material.FaceList)
+                    foreach (var facePoint in face.PointList)
                     {
-                        foreach (var facePoint in face.PointList)
+                        long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
+                        CSGVectorLong fbxPoint;
+                        if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
                         {
-                            long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
-                            CSGVectorLong fbxPoint;
-                            if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
-                            {
-                                fbxPoint = fbxPointList[fbxPointId];
-                            }
-                            else
-                            {
-                                fbxPoint = new CSGVectorLong() { X = facePoint.PointID, Y = facePoint.NormalID, Z = facePoint.TextureCoordinateListID[0] };
-                                fbxPointId = fbxPointList.Count;
+                            fbxPoint = fbxPointList[fbxPointId];
+                        }
+                        else
+                        {
+                            fbxPoint = new CSGVectorLong() { X = facePoint.PointID, Y = facePoint.NormalID, Z = facePoint.TextureCoordinateListID[0] };
+                            fbxPointId = fbxPointList.Count;
 
-                                fbxPointList.Add(fbxPoint);
+                            fbxPointList.Add(fbxPoint);
 
-                                fbxPointIdList.Add(fbxPointKey, fbxPointId);
-                            }
+                            fbxPointIdList.Add(fbxPointKey, fbxPointId);
                         }
                     }
                 }
+            }
 
-                string shapeName = this.GetUniqueName(shape.Name, "shape");
+            string shapeName = this.GetUniqueName(shape.Name, "shape");
 
-                FBXMesh fbxMesh = FBXMesh.Create(fbxScene, shapeName);
-                parentNode.AddNodeAttribute(fbxMesh);
+            FBXMesh fbxMesh = FBXMesh.Create(fbxScene, shapeName);
+            parentNode.AddNodeAttribute(fbxMesh);
 
-                fbxMesh.InitControlPoints(fbxPointIdList.Count);
-                fbxMesh.InitMaterialIndices(ArcManagedFBX.Types.EMappingMode.eByPolygon);
-                fbxMesh.InitNormals(fbxPointIdList.Count);
-                fbxMesh.InitTextureUV(0);
-                fbxMesh.InitTextureUVIndices(ArcManagedFBX.Types.EMappingMode.eByControlPoint);
+            fbxMesh.InitControlPoints(fbxPointIdList.Count);
+            fbxMesh.InitMaterialIndices(ArcManagedFBX.Types.EMappingMode.eByPolygon);
+            fbxMesh.InitNormals(fbxPointIdList.Count);
+            fbxMesh.InitTextureUV(0);
+            fbxMesh.InitTextureUVIndices(ArcManagedFBX.Types.EMappingMode.eByControlPoint);
 
-                int id = 0;
-                foreach (var point in fbxPointList)
+            int id = 0;
+            foreach (var point in fbxPointList)
+            {
+                FBXVector controlPoint = new FBXVector(pointList[point.X].X, pointList[point.X].Y, -pointList[point.X].Z);
+                fbxMesh.SetControlPointAt(controlPoint, id);
+
+                FBXVector normal = new FBXVector(normalList[point.Y].X, normalList[point.Y].Y, -normalList[point.Y].Z);
+                fbxMesh.SetControlPointNormalAt(normal, id);
+
+                ConvertTextureCoordinate(textureCoordinateList, point);
+
+                fbxMesh.AddTextureUV(new FBXVector2(textureCoordinateList[point.Z].U, textureCoordinateList[point.Z].V));
+
+                id++;
+            }
+
+            int materialId = 0;
+            foreach (var material in materialFaceList)
+            {
+                foreach (var face in material.FaceList)
                 {
-                    FBXVector controlPoint = new FBXVector(pointList[point.X].X, pointList[point.X].Y, -pointList[point.X].Z);
-                    fbxMesh.SetControlPointAt(controlPoint, id);
-
-                    FBXVector normal = new FBXVector(normalList[point.Y].X, normalList[point.Y].Y, -normalList[point.Y].Z);
-                    fbxMesh.SetControlPointNormalAt(normal, id);
-
-                    ConvertTextureCoordinate(textureCoordinateList, point);
-
-                    fbxMesh.AddTextureUV(new FBXVector2(textureCoordinateList[point.Z].U, textureCoordinateList[point.Z].V));
-
-                    id++;
-                }
-
-                int materialId = 0;
-                foreach (var material in materialFaceList)
-                {
-                    foreach (var face in material.FaceList)
+                    fbxMesh.BeginPolygon(materialId, -1, -1, true);
+                    foreach (var facePoint in face.PointList.Reverse())
                     {
-                        fbxMesh.BeginPolygon(materialId, -1, -1, true);
-                        foreach (var facePoint in face.PointList.Reverse())
+                        long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
+                        if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
                         {
-                            long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
-                            if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
-                            {
-                                fbxMesh.AddPolygon(fbxPointId, fbxPointId);
-                            }
-                            else
-                            {
-                                // should never happen
-                                Debug.WriteLine("what to do for the impossible?");
-                                fbxMesh.AddPolygon(0, 0);
-                            }
+                            fbxMesh.AddPolygon(fbxPointId, fbxPointId);
                         }
-
-                        fbxMesh.EndPolygon();
+                        else
+                        {
+                            // should never happen
+                            Debug.WriteLine("what to do for the impossible?");
+                            fbxMesh.AddPolygon(0, 0);
+                        }
                     }
 
-                    materialId++;
+                    fbxMesh.EndPolygon();
                 }
+
+                materialId++;
             }
         }
 
