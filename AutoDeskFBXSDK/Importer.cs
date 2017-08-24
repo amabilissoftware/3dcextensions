@@ -49,6 +49,7 @@ namespace AutoDeskFBXSDK
                         {
                             var face = shape.CreateFace();
                             var polygonSize = ((FBXMesh)attribute).GetPolygonSize(polygonId);
+
                             for (int polygonPointId = 0; polygonPointId < polygonSize; polygonPointId++)
                             {
                                 var vertex = ((FBXMesh)attribute).GetPolygonVertex(polygonId, polygonPointId);
@@ -59,12 +60,19 @@ namespace AutoDeskFBXSDK
                                 point.Z = (float)controlPoints[vertex].z;
 
                                 var normal = new ACSG.CSGVector();
+                                var normalFBX = ((FBXMesh)attribute).GetPolygonVertexNormal2(polygonId, polygonPointId);
+                                normal.X = (float)normalFBX.x;
+                                normal.Y = (float)normalFBX.y;
+                                normal.Z = (float)normalFBX.z;
+
                                 var uv = new ACSG.CSGUV();
+                                //((FBXMesh)attribute).GetPolygonVertexUV(polygonId, polygonPointId, )
 
                                 face.AddPointXYZUV(ref point, ref normal, ref uv);
                                 Debug.WriteLine("{0},{1},{2}", controlPoints[vertex].x, controlPoints[vertex].y, controlPoints[vertex].z);
                             }
                         }
+                        shape.Optimize(true);
                         parentGroup.AddShape(shape);
                         Debugger.Break();
                             //FBXMesh thingy;
