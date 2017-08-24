@@ -12,21 +12,12 @@ namespace AutoDeskFBXSDK
 
             if (Common.LoadScene(managerInstance, fbxScene, fileName))
             {
-                DisplayHierarachy(fbxScene, sceneGraph, importParentGroup);
-                Debugger.Break();
+                FBXNode rootNode = fbxScene.GetRootNode();
+                ImportNodeRecursive(rootNode, 0, sceneGraph, importParentGroup);
             }
-            //Debugger.Break();
         }
 
-        private static void DisplayHierarachy(FBXScene sceneInstance, ACSG.CSG sceneGraph, ACSG.CSGGroup importParentGroup)
-        {
-            FBXNode rootNode = sceneInstance.GetRootNode();
-            //var rootGroup = sceneGraph.CreateGroup(importParentGroup);
-            //rootGroup.Name = rootNode.GetName();
-            DisplayHierarchyRecursive(rootNode, 0, sceneGraph, importParentGroup);
-        }
-
-        private static void DisplayHierarchyRecursive(FBXNode nodeInstance, int depth, ACSG.CSG sceneGraph, ACSG.CSGGroup parentGroup)
+        private static void ImportNodeRecursive(FBXNode nodeInstance, int depth, ACSG.CSG sceneGraph, ACSG.CSGGroup parentGroup)
         {
             var group = sceneGraph.CreateGroup(parentGroup);
             group.Name = nodeInstance.GetName();
@@ -38,8 +29,6 @@ namespace AutoDeskFBXSDK
                 switch (attributeType)
                 {
                     case EAttributeType.eMesh:
-                        Debug.WriteLine("{0}/{1}", attribute.GetName(), attributeType.ToString());
-                        Debugger.Break();
                         var controlPoints = ((FBXMesh)attribute).GetControlPoints(null);
 
                         ACSG.CSGShape shape = sceneGraph.CreateShape();
@@ -74,11 +63,8 @@ namespace AutoDeskFBXSDK
                             }
                         }
                         shape.Optimize(true);
+                        shape.Name = attribute.GetName();
                         parentGroup.AddShape(shape);
-                        Debugger.Break();
-                            //FBXMesh thingy;
-                            //thingy.GetControlPoints
-                        //DisplayMesh((FBXMesh)attributeInstance);
                         break;
 
                     case EAttributeType.eCamera:
@@ -93,8 +79,6 @@ namespace AutoDeskFBXSDK
                         //DisplaySkeleton((FBXSkeleton)attributeInstance);
                         break;
                 }
-
-                Debugger.Break();
             }
 
             //string output = string.Empty;
@@ -106,7 +90,7 @@ namespace AutoDeskFBXSDK
             //Debug.WriteLine(string.Format("{0}{1}", output, nodeInstance.GetName()));
 
             for (int index = 0; index < nodeInstance.GetChildCount(); index++)
-                DisplayHierarchyRecursive(nodeInstance.GetChild(index), depth + 1, sceneGraph, group);
+                ImportNodeRecursive(nodeInstance.GetChild(index), depth + 1, sceneGraph, group);
         }
 
 
