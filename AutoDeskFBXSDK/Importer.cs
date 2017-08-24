@@ -1,4 +1,5 @@
 ﻿using ArcManagedFBX;
+using ArcManagedFBX.Types;
 using System.Diagnostics;
 
 namespace AutoDeskFBXSDK
@@ -33,7 +34,57 @@ namespace AutoDeskFBXSDK
             for (int index = 0; index < nodeInstance.GetNodeAttributeCount(); index++)
             {
                 var attribute = nodeInstance.GetNodeAttributeByIndex(index);
-                Debug.WriteLine(attribute.GetName());
+                var attributeType = attribute.GetAttributeType();
+                switch (attributeType)
+                {
+                    case EAttributeType.eMesh:
+                        Debug.WriteLine("{0}/{1}", attribute.GetName(), attributeType.ToString());
+                        Debugger.Break();
+                        var controlPoints = ((FBXMesh)attribute).GetControlPoints(null);
+
+                        ACSG.CSGShape shape = sceneGraph.CreateShape();
+
+                        var polygonCount = ((FBXMesh)attribute).GetPolygonCount();
+                        for (int polygonId = 0; polygonId < polygonCount; polygonId++)
+                        {
+                            var face = shape.CreateFace();
+                            var polygonSize = ((FBXMesh)attribute).GetPolygonSize(polygonId);
+                            for (int polygonPointId = 0; polygonPointId < polygonSize; polygonPointId++)
+                            {
+                                var vertex = ((FBXMesh)attribute).GetPolygonVertex(polygonId, polygonPointId);
+
+                                var point = new ACSG.CSGVector();
+                                point.X = (float)controlPoints[vertex].x;
+                                point.Y = (float)controlPoints[vertex].y;
+                                point.Z = (float)controlPoints[vertex].z;
+
+                                var normal = new ACSG.CSGVector();
+                                var uv = new ACSG.CSGUV();
+
+                                face.AddPointXYZUV(ref point, ref normal, ref uv);
+                                Debug.WriteLine("{0},{1},{2}", controlPoints[vertex].x, controlPoints[vertex].y, controlPoints[vertex].z);
+                            }
+                        }
+                        parentGroup.AddShape(shape);
+                        Debugger.Break();
+                            //FBXMesh thingy;
+                            //thingy.GetControlPoints
+                        //DisplayMesh((FBXMesh)attributeInstance);
+                        break;
+
+                    case EAttributeType.eCamera:
+                        //DisplayCamera((FBXCamera)attributeInstance);
+                        break;
+
+                    case EAttributeType.eLight:
+                        //DisplayLight((FBXLight)attributeInstance);
+                        break;
+
+                    case EAttributeType.eSkeleton:
+                        //DisplaySkeleton((FBXSkeleton)attributeInstance);
+                        break;
+                }
+
                 Debugger.Break();
             }
 
