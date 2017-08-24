@@ -66,10 +66,11 @@ namespace AutoDeskFBXSDK
                                 normal.Z = (float)normalFBX.z;
 
                                 var uv = new ACSG.CSGUV();
-                                //((FBXMesh)attribute).GetPolygonVertexUV(polygonId, polygonPointId, )
+                                var uvFBX = ((FBXMesh)attribute).GetPolygonVertexUV2(polygonId, polygonPointId, string.Empty);
+                                uv.U = (float)uvFBX.x;
+                                uv.V = (float)uvFBX.y;
 
                                 face.AddPointXYZUV(ref point, ref normal, ref uv);
-                                Debug.WriteLine("{0},{1},{2}", controlPoints[vertex].x, controlPoints[vertex].y, controlPoints[vertex].z);
                             }
                         }
                         shape.Optimize(true);
