@@ -5,16 +5,52 @@ namespace AutoDeskFBXSDK
 {
     public class Importer
     {
-        public void Import(string fileName)
+        public void Import(string fileName, ACSG.CSG sceneGraph, ACSG.CSGGroup importParentGroup)
         {
             Common.InitializeSdkObjects("Import Scene", out FBXManager managerInstance, out FBXScene fbxScene);
 
             if (Common.LoadScene(managerInstance, fbxScene, fileName))
             {
+                DisplayHierarachy(fbxScene, sceneGraph, importParentGroup);
                 Debugger.Break();
             }
             //Debugger.Break();
         }
+
+        private static void DisplayHierarachy(FBXScene sceneInstance, ACSG.CSG sceneGraph, ACSG.CSGGroup importParentGroup)
+        {
+            FBXNode rootNode = sceneInstance.GetRootNode();
+            //var rootGroup = sceneGraph.CreateGroup(importParentGroup);
+            //rootGroup.Name = rootNode.GetName();
+            DisplayHierarchyRecursive(rootNode, 0, sceneGraph, importParentGroup);
+        }
+
+        private static void DisplayHierarchyRecursive(FBXNode nodeInstance, int depth, ACSG.CSG sceneGraph, ACSG.CSGGroup parentGroup)
+        {
+            var group = sceneGraph.CreateGroup(parentGroup);
+            group.Name = nodeInstance.GetName();
+
+            for (int index = 0; index < nodeInstance.GetNodeAttributeCount(); index++)
+            {
+                var attribute = nodeInstance.GetNodeAttributeByIndex(index);
+                Debug.WriteLine(attribute.GetName());
+                Debugger.Break();
+            }
+
+            //string output = string.Empty;
+
+            //for (int index = 0; index < depth; index++)
+            //    output += "  ";
+
+            //// Write the information out
+            //Debug.WriteLine(string.Format("{0}{1}", output, nodeInstance.GetName()));
+
+            for (int index = 0; index < nodeInstance.GetChildCount(); index++)
+                DisplayHierarchyRecursive(nodeInstance.GetChild(index), depth + 1, sceneGraph, group);
+        }
+
+
+
         // Coming Soon! - This is what I'll probably be using as a base:
 
         // Option Explicit

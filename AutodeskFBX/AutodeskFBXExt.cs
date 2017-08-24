@@ -81,7 +81,7 @@
             ref string userDataString)
         {
             Importer importer = new Importer();
-            importer.Import(importFileName);
+            importer.Import(importFileName, sceneGraph, importGroup);
         }
     }
 }
