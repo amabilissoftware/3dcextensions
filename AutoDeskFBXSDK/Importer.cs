@@ -33,7 +33,8 @@ namespace AutoDeskFBXSDK
             var lclRotation = nodeInstance.LclRotationGet();
             var orientationDir = new CSGVector();
             var orientationUp = new CSGVector();
-            var euler = csgFunctions.CreateVector((float)(-lclRotation.x / 180 * Math.PI), (float)(lclRotation.y / 180 * Math.PI), (float)(-lclRotation.z / 180 * Math.PI));
+            var euler = csgFunctions.CreateVector((float)(-lclRotation.x / 180 * Math.PI), (float)(-lclRotation.y / 180 * Math.PI), (float)(lclRotation.z / 180 * Math.PI));
+            //var euler = csgFunctions.CreateVector((float)(lclRotation.z / 180 * Math.PI), (float)(lclRotation.y / 180 * Math.PI), (float)(lclRotation.x / 180 * Math.PI));
 
             csgFunctions.EulertoOrientationXYZ(ref euler, ref orientationDir, ref orientationUp);
             group.SetOrientation(group.Parent, -1, ref orientationDir, ref orientationUp);
