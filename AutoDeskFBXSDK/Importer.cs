@@ -1,5 +1,7 @@
-﻿using ArcManagedFBX;
+﻿using ACSG;
+using ArcManagedFBX;
 using ArcManagedFBX.Types;
+using System;
 using System.Diagnostics;
 
 namespace AutoDeskFBXSDK
@@ -19,8 +21,25 @@ namespace AutoDeskFBXSDK
 
         private static void ImportNodeRecursive(FBXNode nodeInstance, int depth, ACSG.CSG sceneGraph, ACSG.CSGGroup parentGroup)
         {
+            var csgFunctions = new ACSG.CSGFunctions();
             var group = sceneGraph.CreateGroup(parentGroup);
             group.Name = nodeInstance.GetName();
+
+            var lclTranslation = nodeInstance.LclTranslationGet();
+            var position = csgFunctions.CreateVector((float)lclTranslation.x, (float)lclTranslation.y, (float)-lclTranslation.z);
+            group.SetPosition(group.Parent, -1, ref position);
+
+            var lclRotation = nodeInstance.LclRotationGet();
+            var orientationDir = new CSGVector();
+            var orientationUp = new CSGVector();
+            var euler = csgFunctions.CreateVector((float)(-lclRotation.x / 180 * Math.PI), (float)(lclRotation.y / 180 * Math.PI), (float)(-lclRotation.z / 180 * Math.PI));
+
+            csgFunctions.EulertoOrientationXYZ(ref euler, ref orientationDir, ref orientationUp);
+            group.SetOrientation(group.Parent, -1, ref orientationDir, ref orientationUp);
+            //var transform = new CSGMatrix();
+            //group.GetTransform(group.Parent, -1, ref transform);
+            //var leftHandedTransform = Common.ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(transform);
+            //group.SetTransform(group.Parent, -1, ref leftHandedTransform);
 
             for (int index = 0; index < nodeInstance.GetNodeAttributeCount(); index++)
             {
@@ -39,20 +58,20 @@ namespace AutoDeskFBXSDK
                             var face = shape.CreateFace();
                             var polygonSize = ((FBXMesh)attribute).GetPolygonSize(polygonId);
 
-                            for (int polygonPointId = 0; polygonPointId < polygonSize; polygonPointId++)
+                            for (int polygonPointId = polygonSize - 1; polygonPointId >= 0; polygonPointId--)
                             {
                                 var vertex = ((FBXMesh)attribute).GetPolygonVertex(polygonId, polygonPointId);
 
                                 var point = new ACSG.CSGVector();
                                 point.X = (float)controlPoints[vertex].x;
                                 point.Y = (float)controlPoints[vertex].y;
-                                point.Z = (float)controlPoints[vertex].z;
+                                point.Z = (float)-controlPoints[vertex].z;
 
                                 var normal = new ACSG.CSGVector();
                                 var normalFBX = ((FBXMesh)attribute).GetPolygonVertexNormal2(polygonId, polygonPointId);
                                 normal.X = (float)normalFBX.x;
                                 normal.Y = (float)normalFBX.y;
-                                normal.Z = (float)normalFBX.z;
+                                normal.Z = (float)-normalFBX.z;
 
                                 var uv = new ACSG.CSGUV();
                                 var uvFBX = ((FBXMesh)attribute).GetPolygonVertexUV2(polygonId, polygonPointId, string.Empty);
