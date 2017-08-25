@@ -2,6 +2,7 @@
 using ArcManagedFBX;
 using ArcManagedFBX.Types;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace AutoDeskFBXSDK
@@ -41,6 +42,20 @@ namespace AutoDeskFBXSDK
             //var leftHandedTransform = Common.ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(transform);
             //group.SetTransform(group.Parent, -1, ref leftHandedTransform);
 
+            List<CSGMaterial> materialList = new List<CSGMaterial>();
+            var materialCount = nodeInstance.GetMaterialCount();
+            for (int materialId = 0; materialId < materialCount; materialId++)
+            {
+                var material = nodeInstance.GetMaterial(materialId);
+                //Debug.WriteLine(((FBXSurfaceLambert)material).DiffuseGetSrcObjectName());
+                //(FBXSurfaceLambert)material.
+                //var thing = material.GetSrcObject(0);
+                //(FBXSurfaceLambert)material
+                //Debugger.Break();
+                CSGMaterial csgMaterial = sceneGraph.CreateMaterial();
+                materialList.Add(csgMaterial);
+            }
+
             for (int index = 0; index < nodeInstance.GetNodeAttributeCount(); index++)
             {
                 var attribute = nodeInstance.GetNodeAttributeByIndex(index);
@@ -48,19 +63,35 @@ namespace AutoDeskFBXSDK
                 switch (attributeType)
                 {
                     case EAttributeType.eMesh:
-                        var controlPoints = ((FBXMesh)attribute).GetControlPoints(null);
+                        var mesh = (FBXMesh)attribute;
+
+                        var materialIndices = mesh.GetPolygonMaterialIndices();
+
+                        //for (int testId = 0; testId < 1000; testId++)
+                        //{
+                        //    var textureIndices = mesh.GetPolygonTextureIndices(testId);
+                        //    if (textureIndices != null)
+                        //    {
+                        //        Debugger.Break();
+                        //    }
+                        //}
+                        //var materialIndices = mesh.get
+                        //var textureIndices = mesh.get
+
+                        var controlPoints = mesh.GetControlPoints(null);
 
                         ACSG.CSGShape shape = sceneGraph.CreateShape();
 
-                        var polygonCount = ((FBXMesh)attribute).GetPolygonCount();
+                        var polygonCount = mesh.GetPolygonCount();
                         for (int polygonId = 0; polygonId < polygonCount; polygonId++)
                         {
                             var face = shape.CreateFace();
-                            var polygonSize = ((FBXMesh)attribute).GetPolygonSize(polygonId);
+                            face.Material = materialList[materialIndices[polygonId]];
+                            var polygonSize = mesh.GetPolygonSize(polygonId);
 
                             for (int polygonPointId = polygonSize - 1; polygonPointId >= 0; polygonPointId--)
                             {
-                                var vertex = ((FBXMesh)attribute).GetPolygonVertex(polygonId, polygonPointId);
+                                var vertex = mesh.GetPolygonVertex(polygonId, polygonPointId);
 
                                 var point = new ACSG.CSGVector();
                                 point.X = (float)controlPoints[vertex].x;
@@ -68,13 +99,13 @@ namespace AutoDeskFBXSDK
                                 point.Z = (float)-controlPoints[vertex].z;
 
                                 var normal = new ACSG.CSGVector();
-                                var normalFBX = ((FBXMesh)attribute).GetPolygonVertexNormal2(polygonId, polygonPointId);
+                                var normalFBX = mesh.GetPolygonVertexNormal2(polygonId, polygonPointId);
                                 normal.X = (float)normalFBX.x;
                                 normal.Y = (float)normalFBX.y;
                                 normal.Z = (float)-normalFBX.z;
 
                                 var uv = new ACSG.CSGUV();
-                                var uvFBX = ((FBXMesh)attribute).GetPolygonVertexUV2(polygonId, polygonPointId, string.Empty);
+                                var uvFBX = mesh.GetPolygonVertexUV2(polygonId, polygonPointId, string.Empty);
                                 uv.U = (float)uvFBX.x;
                                 uv.V = (float)uvFBX.y;
 
