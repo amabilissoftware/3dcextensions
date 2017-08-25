@@ -6,6 +6,7 @@
 
     using ArcManagedFBX;
     using ArcManagedFBX.IO;
+    using ACSG;
 
     // this is converted from the Autodesk SDK
     // there are lots of items commented out. I'll either be uncommenting the soon, or removing them completely
@@ -210,6 +211,23 @@
             // Destroy the exporter.
             lExporter.Destroy();
             return lStatus;
+        }
+
+        public static CSGMatrix ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(CSGMatrix transform)
+        {
+            // mirror each base vector's z component
+            transform.m13 *= -1;
+            transform.m23 *= -1;
+            transform.m33 *= -1;
+            transform.m43 *= -1;
+
+            // and now invert the Z base vector to keep the matrix decomposable
+            // will come out just fine when the meshes are locally mirrored as well
+            transform.m31 *= -1;
+            transform.m32 *= -1;
+            transform.m33 *= -1; // NOTE: this is inverted twice. Not sure why, but if there is a bug, this is probably it.
+            transform.m34 *= -1;
+            return transform;
         }
     }
 }

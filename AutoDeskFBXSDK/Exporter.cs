@@ -58,22 +58,7 @@
             textureCoordinateList[point.Z].V += 1;
         }
 
-        private static CSGMatrix ConvertTransformToRightHanded_ThisLittleBitTookFourDaysToFigureOut(CSGMatrix transform)
-        {
-            // mirror each base vector's z component
-            transform.m13 *= -1;
-            transform.m23 *= -1;
-            transform.m33 *= -1;
-            transform.m43 *= -1;
 
-            // and now invert the Z base vector to keep the matrix decomposable
-            // will come out just fine when the meshes are locally mirrored as well
-            transform.m31 *= -1;
-            transform.m32 *= -1;
-            transform.m33 *= -1; // NOTE: this is inverted twice. Not sure why, but if there is a bug, this is probably it.
-            transform.m34 *= -1;
-            return transform;
-        }
 
         private void ExportGroupAnimation(CSGGroup group, FBXAnimLayer animationLayer, float keyFramesPerSecond, FBXNode node)
         {
@@ -372,7 +357,7 @@
             CSGMatrix transformLH = new CSGMatrix();
             group.GetTransform(group.Parent, time, ref transformLH);
 
-            var transformRH = ConvertTransformToRightHanded_ThisLittleBitTookFourDaysToFigureOut(transformLH);
+            var transformRH = Common.ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(transformLH);
 
             FBXMatrix matrix = new FBXMatrix(
                 transformRH.m11,

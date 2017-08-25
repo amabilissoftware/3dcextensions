@@ -64,7 +64,7 @@ namespace AutoDeskFBXSDK
                         }
                         shape.Optimize(true);
                         shape.Name = attribute.GetName();
-                        parentGroup.AddShape(shape);
+                        group.AddShape(shape);
                         break;
 
                     case EAttributeType.eCamera:
