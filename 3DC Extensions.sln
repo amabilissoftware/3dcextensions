@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutodeskFBX", "AutoDeskFBX\AutodeskFBX.csproj", "{1F31F357-4C87-4B72-8D73-70C7729268C2}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bend", "Bend\Bend.csproj", "{7AFA1561-A0DD-4DEC-98FB-692FDF22C008}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionHelpers", "ExtensionHelpers\ExtensionHelpers.csproj", "{6939E666-BC1A-41E1-949B-2002F4FCD50D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "3MFConsortium3MF", "3MFConsortium3MF\3MFConsortium3MF.csproj", "{61573BD9-702B-44EC-B8A4-8CE80F45CAF4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,8 +97,19 @@ Global
 		{6939E666-BC1A-41E1-949B-2002F4FCD50D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6939E666-BC1A-41E1-949B-2002F4FCD50D}.Release|x86.ActiveCfg = Release|x86
 		{6939E666-BC1A-41E1-949B-2002F4FCD50D}.Release|x86.Build.0 = Release|x86
+		{61573BD9-702B-44EC-B8A4-8CE80F45CAF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61573BD9-702B-44EC-B8A4-8CE80F45CAF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61573BD9-702B-44EC-B8A4-8CE80F45CAF4}.Debug|x86.ActiveCfg = Debug|x86
+		{61573BD9-702B-44EC-B8A4-8CE80F45CAF4}.Debug|x86.Build.0 = Debug|x86
+		{61573BD9-702B-44EC-B8A4-8CE80F45CAF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61573BD9-702B-44EC-B8A4-8CE80F45CAF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61573BD9-702B-44EC-B8A4-8CE80F45CAF4}.Release|x86.ActiveCfg = Release|x86
+		{61573BD9-702B-44EC-B8A4-8CE80F45CAF4}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2A454B61-FB1E-45CD-AC35-16301F89D21A}
 	EndGlobalSection
 EndGlobal
