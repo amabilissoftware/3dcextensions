@@ -97,9 +97,18 @@
             ref int[] userDataInts,
             ref string userDataString)
         {
+            CSGGroup origin = sceneGraph.CreateGroup(null);
+
+            origin.AddChild(group);
+            CSGVector axis = new CSGVector();
+            axis.X = -1;
+            group.AddRotation(CSGCombineType.CSGCombineReplace, axis, (float)(Math.PI * .5));
+
             var sceneComponents = this.CollectSceneComponents(group);
             this.CreateProgrammatically(sceneComponents);
             SavePackage(filename);
+
+            origin.RemoveChild(group);
         }
 
         public void Import(
@@ -295,20 +304,20 @@
                 Debug.WriteLine(item.group.id);
                 Matrix4x4 matrix = new Matrix4x4();
                 matrix.M11 = transformRH.m11;
-                matrix.M12 = transformRH.m21;
-                matrix.M13 = transformRH.m31;
+                matrix.M12 = transformRH.m31;
+                matrix.M13 = -transformRH.m21;
                 matrix.M14 = transformRH.m41;
                 matrix.M21 = transformRH.m12;
-                matrix.M22 = transformRH.m22;
-                matrix.M23 = transformRH.m32;
+                matrix.M22 = transformRH.m32;
+                matrix.M23 = -transformRH.m22;
                 matrix.M24 = transformRH.m42;
-                matrix.M31 = transformRH.m13;
-                matrix.M32 = transformRH.m23;
-                matrix.M33 = transformRH.m33;
-                matrix.M34 = transformRH.m43;
+                matrix.M31 = -transformRH.m13;
+                matrix.M32 = -transformRH.m33;
+                matrix.M33 = transformRH.m23;
+                matrix.M34 = -transformRH.m43;
                 matrix.M41 = transformRH.m14;
-                matrix.M42 = transformRH.m24;
-                matrix.M43 = transformRH.m34;
+                matrix.M42 = transformRH.m34;
+                matrix.M43 = -transformRH.m24;
                 matrix.M44 = transformRH.m44;
                 var componentWithMatrix2 = new Printing3DComponentWithMatrix() { Component = component2, Matrix = matrix };
 
@@ -416,9 +425,9 @@
                 {
                     vertices[verticesLocation] = point.X;
                     verticesLocation++;
-                    vertices[verticesLocation] = point.Y;
-                    verticesLocation++;
                     vertices[verticesLocation] = point.Z;
+                    verticesLocation++;
+                    vertices[verticesLocation] = -point.Y;
                     verticesLocation++;
                 }
 
