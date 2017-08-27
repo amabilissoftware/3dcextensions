@@ -268,14 +268,14 @@
                 model.Meshes.Add(mesh2);
             }
 
-            var mesh = new Printing3DMesh();
+            //var mesh = new Printing3DMesh();
 
-            await SetVerticesAsync(mesh);
-            await SetTriangleIndicesAsync(mesh);
-            //await SetMaterialIndicesAsync(mesh);
+            //await SetVerticesAsync(mesh);
+            //await SetTriangleIndicesAsync(mesh);
+            ////await SetMaterialIndicesAsync(mesh);
 
-            // add the mesh to the model
-            model.Meshes.Add(mesh);
+            //// add the mesh to the model
+            //model.Meshes.Add(mesh);
             #endregion
 
             for (int itemId = 0; itemId < sceneComponents.Count; itemId++)
@@ -291,23 +291,24 @@
                 CSGMatrix transformLH = new CSGMatrix();
                 item.group.GetTransform(item.group.GetScene(), -1, ref transformLH);
                 var transformRH = transformLH; // ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(transformLH);
-
+                Console.WriteLine(item.group.id);
+                Debug.WriteLine(item.group.id);
                 Matrix4x4 matrix = new Matrix4x4();
                 matrix.M11 = transformRH.m11;
-                matrix.M12 = transformRH.m12;
-                matrix.M13 = transformRH.m13;
-                matrix.M14 = transformRH.m14;
-                matrix.M21 = transformRH.m21;
+                matrix.M12 = transformRH.m21;
+                matrix.M13 = transformRH.m31;
+                matrix.M14 = transformRH.m41;
+                matrix.M21 = transformRH.m12;
                 matrix.M22 = transformRH.m22;
-                matrix.M23 = transformRH.m23;
-                matrix.M24 = transformRH.m24;
-                matrix.M31 = transformRH.m31;
-                matrix.M32 = transformRH.m32;
+                matrix.M23 = transformRH.m32;
+                matrix.M24 = transformRH.m42;
+                matrix.M31 = transformRH.m13;
+                matrix.M32 = transformRH.m23;
                 matrix.M33 = transformRH.m33;
-                matrix.M34 = transformRH.m34;
-                matrix.M41 = transformRH.m41;
-                matrix.M42 = transformRH.m42;
-                matrix.M43 = transformRH.m43;
+                matrix.M34 = transformRH.m43;
+                matrix.M41 = transformRH.m14;
+                matrix.M42 = transformRH.m24;
+                matrix.M43 = transformRH.m34;
                 matrix.M44 = transformRH.m44;
                 var componentWithMatrix2 = new Printing3DComponentWithMatrix() { Component = component2, Matrix = matrix };
 
@@ -315,22 +316,22 @@
             }
 
             #region Adding a component to the build
-            // create a component.
-            Printing3DComponent component = new Printing3DComponent();
+            //// create a component.
+            //Printing3DComponent component = new Printing3DComponent();
 
-            // assign the mesh to the component's mesh.
-            component.Mesh = mesh;
+            //// assign the mesh to the component's mesh.
+            //component.Mesh = mesh;
 
-            // Add the component to the model. A model can have multiple components.
-            model.Components.Add(component);
+            //// Add the component to the model. A model can have multiple components.
+            //model.Components.Add(component);
 
-            // The world matrix for the component is the identity matrix.
-            var componentWithMatrix = new Printing3DComponentWithMatrix() { Component = component, Matrix = Matrix4x4.Identity };
+            //// The world matrix for the component is the identity matrix.
+            //var componentWithMatrix = new Printing3DComponentWithMatrix() { Component = component, Matrix = Matrix4x4.Identity };
 
-            // add the componentWithMatrix to the build.
-            // The build defines what is to be printed from within a Printing3DModel.
-            // If you leave a mesh out of the build, it will not be printed.
-            model.Build.Components.Add(componentWithMatrix);
+            //// add the componentWithMatrix to the build.
+            //// The build defines what is to be printed from within a Printing3DModel.
+            //// If you leave a mesh out of the build, it will not be printed.
+            //model.Build.Components.Add(componentWithMatrix);
             #endregion
 
             // Save the completed model into a package.
