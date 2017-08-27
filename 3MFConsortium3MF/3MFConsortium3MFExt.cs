@@ -106,7 +106,7 @@
             group.AddRotation(CSGCombineType.CSGCombineReplace, axis, (float)(Math.PI * .5));
 
             var sceneComponents = this.CollectSceneComponents(group);
-            this.CreateProgrammatically(sceneComponents);
+            this.CreateProgrammatically(sceneGraph, sceneComponents);
             SavePackage(filename);
 
             origin.RemoveChild(group);
@@ -290,15 +290,15 @@
         }
 
 
-        private void CreateProgrammatically(List<Component> sceneComponents)
+        private void CreateProgrammatically(CSG sceneGrpah, List<Component> sceneComponents)
         {
-            var packagingTask = CreatePackageAsync(sceneComponents);
+            var packagingTask = CreatePackageAsync(sceneGrpah, sceneComponents);
             packagingTask.Wait();
             currentPackage = packagingTask.Result;
         }
 
         #region Creating a package programmatically
-        private async Task<Printing3D3MFPackage> CreatePackageAsync(List<Component> sceneComponents)
+        private async Task<Printing3D3MFPackage> CreatePackageAsync(CSG sceneGraph, List<Component> sceneComponents)
         {
             var package = new Printing3D3MFPackage();
 
@@ -419,10 +419,8 @@
             #endregion
 
             #region Mesh
-            for (int itemId = 0; itemId < sceneComponents.Count; itemId++)
+            foreach (var component in sceneComponents)
             {
-                var mesh2 = sceneComponents[itemId].mesh;
-
                 CSGVector[] pointList = new CSGVector[0];
                 int pointListCount = 0;
 
@@ -435,12 +433,13 @@
                 CSGMaterialFaceList[] materialFaceList = new CSGMaterialFaceList[0];
                 int materialFaceListCount = 0;
 
-                sceneComponents[itemId].shape.GetGeometryMaterialSorted(true, true, true, ref pointList, ref pointListCount, ref normalList, ref normalListCount, ref textureCoordinateList, ref textureCoordinateListCount, ref materialFaceList, ref materialFaceListCount);
+                component.shape.GetGeometryMaterialSorted(true, true, true, ref pointList, ref pointListCount, ref normalList, ref normalListCount, ref textureCoordinateList, ref textureCoordinateListCount, ref materialFaceList, ref materialFaceListCount);
 
-                await SetVerticesAsync2(mesh2, pointList);
-                await SetTriangleIndicesAsync2(mesh2, materialFaceList);
+                await SetVerticesAsync2(component.mesh, pointList);
+                //await SetNormalsAsync2(component.mesh, normalList);
+                await SetTriangleIndicesAsync2(sceneGraph, package, component.mesh, materialFaceList);
 
-                model.Meshes.Add(mesh2);
+                model.Meshes.Add(component.mesh);
             }
 
             //var mesh = new Printing3DMesh();
@@ -589,6 +588,40 @@
             }
         }
 
+        //// Create the buffer for vertex positions.
+        //private static async Task SetNormalsAsync2(Printing3DMesh mesh, CSGVector[] normalList)
+        //{
+        //    Printing3DBufferDescription description;
+        //    description.Format = Printing3DBufferFormat.Printing3DDouble;
+        //    description.Stride = 3; // Three values per vertex (x, y, z).
+        //    mesh.VertexNormalsDescription = description;
+        //    mesh.VertexCount = (uint)normalList.Length;
+
+        //    // Create the buffer into which we will write the vertex positions.
+        //    mesh.CreateVertexPositions(sizeof(double) * description.Stride * mesh.VertexCount);
+
+        //    // Fill the buffer with vertex coordinates.
+        //    using (var stream = mesh.GetVertexNormals().AsStream())
+        //    {
+        //        double[] normals = new double[normalList.Length * 3];
+        //        int verticesLocation = 0;
+        //        //copy points using magic to change them to 3MF's format handedness
+        //        foreach (var normal in normalList)
+        //        {
+        //            normals[verticesLocation] = normal.X;
+        //            verticesLocation++;
+        //            normals[verticesLocation] = normal.Z;
+        //            verticesLocation++;
+        //            normals[verticesLocation] = -normal.Y;
+        //            verticesLocation++;
+        //        }
+
+        //        byte[] vertexData = normals.SelectMany(v => BitConverter.GetBytes(v)).ToArray();
+
+        //        await stream.WriteAsync(vertexData, 0, vertexData.Length);
+        //    }
+        //}
+
         // Create the buffer for triangle indices.
         private static async Task SetTriangleIndicesAsync(Printing3DMesh mesh)
         {
@@ -626,11 +659,31 @@
         }
 
         // Create the buffer for triangle indices.
-        private static async Task SetTriangleIndicesAsync2(Printing3DMesh mesh, CSGMaterialFaceList[] materialFaceList)
+        private async Task SetTriangleIndicesAsync2(CSG sceneGraph, Printing3D3MFPackage package, Printing3DMesh mesh, CSGMaterialFaceList[] materialFaceList)
         {
             uint triangleCount = 0;
             foreach (var material in materialFaceList)
             {
+                int textureId;
+
+                string texturePath = sceneGraph.FindFile(material.Material.Texture.Texture0Name);
+              
+                if (!this.textureIdList.TryGetValue(texturePath, out textureId))
+                {
+                    textureId = textureIdList.Count;
+                    this.textureIdList.Add(texturePath, textureId);
+
+                    Printing3DTextureResource textureResource = new Printing3DTextureResource();
+
+                    textureResource.Name = texturePath;
+
+                    StorageFile file = await StorageFile.GetFileFromPathAsync(texturePath);
+                    textureResource.TextureData = await file.OpenReadAsync();
+
+                    package.Textures.Add(textureResource);
+                }
+
+
                 triangleCount += (uint)material.FaceListCount;
             }
 
@@ -838,6 +891,8 @@
         private string[] uniqueNamesList = new string[0];
 
         private int uniqueNamesListCount;
+
+        private Dictionary<int, string> textureList = new Dictionary<int, string>();
 
         private List<Component> CollectSceneComponents(CSGGroup scene)
         {
