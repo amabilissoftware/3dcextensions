@@ -121,14 +121,58 @@
             ref int[] userDataInts,
             ref string userDataString)
         {
+            CSGVector axis = new CSGVector();
+            axis.X = 1;
+            importGroup.AddRotation(CSGCombineType.CSGCombineReplace, axis, (float)(Math.PI * .5));
+
+
             var loadModelTask = LoadModelFromFile(importFileName);
             loadModelTask.Wait();
 
             var model = loadModelTask.Result;
 
-            foreach (var mesh in model.Meshes)
+            int meshId = 0;
+            //var thing = model.Components[0];
+            //thing.Components[0].Matrix
+            //var thingy = model.Components;
+            foreach (var component in model.Build.Components)
             {
-                double[] vertexList;
+                //Debug.WriteLine(component.Components.Count.ToString());
+                var matrix = component.Matrix;
+
+                // use magic to change it from 3MF's format handedness
+                CSGMatrix transform = new CSGMatrix();
+                transform.m11 = matrix.M11;
+                transform.m31 = matrix.M12;
+                transform.m21 = -matrix.M13;
+                transform.m41 = matrix.M14;
+                transform.m12 = matrix.M21;
+                transform.m32 = matrix.M22;
+                transform.m22 = -matrix.M23;
+                transform.m42 = matrix.M24;
+                transform.m13 = -matrix.M31;
+                transform.m33 = -matrix.M32;
+                transform.m23 = matrix.M33;
+                transform.m43 = -matrix.M34;
+                transform.m14 = matrix.M41;
+                transform.m34 = matrix.M42;
+                transform.m24 = -matrix.M43;
+                transform.m44 = matrix.M44;
+
+                CSGGroup group = sceneGraph.CreateGroup(importGroup);
+                group.SetTransform(group.GetScene(), -1, transform);
+                group.Name = "Group-" + meshId.ToString();
+
+                var mesh = component.Component.Mesh;
+
+                CSGShape shape = sceneGraph.CreateShape();
+                shape.Name = "Mesh-" + meshId.ToString();
+                group.AddShape(shape);
+
+                CSGMaterial[] materialList = new CSGMaterial[1];
+                materialList[0] = sceneGraph.CreateMaterial();
+
+                CSGVector[] pointList;
                 var vertexListIBuffer = mesh.GetVertexPositions();
                 using (var stream = vertexListIBuffer.AsStream())
                 {
@@ -136,18 +180,33 @@
                     stream.Read(buffer, 0, buffer.Length);
 
                     int bufferLocation = 0;
-                    int vertexListIndex = 0;
-                    vertexList = new double[buffer.Length / 8]; // remove this hard coding
+                    int pointListLocation = 0;
+                    pointList = new CSGVector[buffer.Length / 8 / 3]; // remove this hard coding
                     while (bufferLocation < buffer.Length)
                     {
-                        vertexList[vertexListIndex] = BitConverter.ToDouble(buffer, bufferLocation);
+                        //copy points using magic to change them from 3MF's format handedness
 
-                        vertexListIndex++;
+                        pointList[pointListLocation].X = (float)BitConverter.ToDouble(buffer, bufferLocation);
                         bufferLocation += 8; // remove this hard coding
+
+                        pointList[pointListLocation].Z = (float)BitConverter.ToDouble(buffer, bufferLocation);
+                        bufferLocation += 8; // remove this hard coding
+
+                        pointList[pointListLocation].Y = -(float)BitConverter.ToDouble(buffer, bufferLocation);
+                        bufferLocation += 8; // remove this hard coding
+
+
+                        pointListLocation++;
                     }
                 }
 
-                UInt32[] indexList;
+                CSGVector[] normalList = new CSGVector[1];
+                normalList[0] = new CSGVector();
+
+                CSGUV[] uvList = new CSGUV[1];
+                uvList[0] = new CSGUV();
+
+                CSGFaceAttributes[] faceList;
                 var triangleListIBuffer = mesh.GetTriangleIndices();
                 using (var stream = triangleListIBuffer.AsStream())
                 {
@@ -155,19 +214,36 @@
                     stream.Read(buffer, 0, buffer.Length);
 
                     int bufferLocation = 0;
-                    int indexListLocation = 0;
-                    indexList = new uint[buffer.Length / 4]; // remove this hard coding
+                    int faceListLocation = 0;
+                    faceList = new CSGFaceAttributes[buffer.Length / 4 / 3]; // remove this hard coding
                     while (bufferLocation < buffer.Length)
                     {
-                        indexList[indexListLocation] = BitConverter.ToUInt32(buffer, bufferLocation);
+                        faceList[faceListLocation].PointList = new i_CSGFacePoint[3];
 
-                        indexListLocation++;
+                        faceList[faceListLocation].PointList[0].PointID = (int)BitConverter.ToUInt32(buffer, bufferLocation);
                         bufferLocation += 4; // remove this hard coding
+
+                        faceList[faceListLocation].PointList[1].PointID = (int)BitConverter.ToUInt32(buffer, bufferLocation);
+                        bufferLocation += 4; // remove this hard coding
+
+                        faceList[faceListLocation].PointList[2].PointID = (int)BitConverter.ToUInt32(buffer, bufferLocation);
+                        bufferLocation += 4; // remove this hard coding
+
+                        faceList[faceListLocation].PointListCount = 3;
+                        faceListLocation++;
                     }
+                    
                 }
 
-                Debugger.Break();
-                Debug.WriteLine(mesh.ToString());
+                shape.AddGeometry(ref materialList, ref pointList, ref normalList, ref uvList, ref faceList, true, true);
+
+                // this is temporary (ONLY if no normals)
+                shape.Crease();
+
+                //Debugger.Break();
+                //Debug.WriteLine(mesh.ToString());
+
+                meshId++;
             }
 
             //var unPackagingTask = LoadModelAsync(importFileName);
@@ -179,7 +255,7 @@
 
             //Importer importer = new Importer();
             //importer.Import(importFileName, sceneGraph, importGroup);
-            Debugger.Break();
+            //Debugger.Break();
         }
 
         private async Task<Printing3DModel> LoadModelFromFile(string path)
@@ -510,7 +586,7 @@
             {
                 double[] vertices = new double[pointList.Length * 3];
                 int verticesLocation = 0;
-                //copy points using magic to change it to 3MF's format handedness
+                //copy points using magic to change them to 3MF's format handedness
                 foreach (var point in pointList)
                 {
                     vertices[verticesLocation] = point.X;
