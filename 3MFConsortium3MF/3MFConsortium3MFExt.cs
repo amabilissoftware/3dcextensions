@@ -86,7 +86,7 @@
         /// <summary>
         ///   Gets a value indicating whether imports are supported.
         /// </summary>
-        public bool SupportImport => false;
+        public bool SupportImport => true;
 
         public void Export(
             string filename,
@@ -121,9 +121,98 @@
             ref int[] userDataInts,
             ref string userDataString)
         {
-            Importer importer = new Importer();
-            importer.Import(importFileName, sceneGraph, importGroup);
+            var loadModelTask = LoadModelFromFile(importFileName);
+            loadModelTask.Wait();
+
+            var model = loadModelTask.Result;
+
+            foreach (var mesh in model.Meshes)
+            {
+                double[] vertexList;
+                var vertexListIBuffer = mesh.GetVertexPositions();
+                using (var stream = vertexListIBuffer.AsStream())
+                {
+                    byte[] buffer = new byte[stream.Length];
+                    stream.Read(buffer, 0, buffer.Length);
+
+                    int bufferLocation = 0;
+                    int vertexListIndex = 0;
+                    vertexList = new double[buffer.Length / 8]; // remove this hard coding
+                    while (bufferLocation < buffer.Length)
+                    {
+                        vertexList[vertexListIndex] = BitConverter.ToDouble(buffer, bufferLocation);
+
+                        vertexListIndex++;
+                        bufferLocation += 8; // remove this hard coding
+                    }
+                }
+
+                UInt32[] indexList;
+                var triangleListIBuffer = mesh.GetTriangleIndices();
+                using (var stream = triangleListIBuffer.AsStream())
+                {
+                    byte[] buffer = new byte[stream.Length];
+                    stream.Read(buffer, 0, buffer.Length);
+
+                    int bufferLocation = 0;
+                    int indexListLocation = 0;
+                    indexList = new uint[buffer.Length / 4]; // remove this hard coding
+                    while (bufferLocation < buffer.Length)
+                    {
+                        indexList[indexListLocation] = BitConverter.ToUInt32(buffer, bufferLocation);
+
+                        indexListLocation++;
+                        bufferLocation += 4; // remove this hard coding
+                    }
+                }
+
+                Debugger.Break();
+                Debug.WriteLine(mesh.ToString());
+            }
+
+            //var unPackagingTask = LoadModelAsync(importFileName);
+            //unPackagingTask.Wait();
+
+            //var package = unPackagingTask.Result;
+            //package.LoadModelFromPackageAsync
+            //var model = package.LoadModelFromPackageAsync()
+
+            //Importer importer = new Importer();
+            //importer.Import(importFileName, sceneGraph, importGroup);
+            Debugger.Break();
         }
+
+        private async Task<Printing3DModel> LoadModelFromFile(string path)
+        {
+            //rootPage.NotifyUser("", NotifyType.StatusMessage);
+
+            FileOpenPicker openPicker = new FileOpenPicker();
+            openPicker.ViewMode = PickerViewMode.Thumbnail;
+            openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            openPicker.FileTypeFilter.Add(".3mf");
+
+            StorageFile file = await StorageFile.GetFileFromPathAsync(path);
+
+            //rootPage.NotifyUser("Loading...", NotifyType.StatusMessage);
+
+            var package = new Printing3D3MFPackage();
+            Printing3DModel model;
+            using (var fileStream = await file.OpenAsync(FileAccessMode.Read))
+            {
+                Console.WriteLine("do i really need to do all of this?");
+                model = await package.LoadModelFromPackageAsync(fileStream);
+                //rootPage.NotifyUser("Repairing...", NotifyType.StatusMessage);
+                //await model.RepairAsync();
+                //rootPage.NotifyUser("Saving...", NotifyType.StatusMessage);
+                //await package.SaveModelToPackageAsync(model);
+                //await FixTextureContentTypeAsync(package);
+            }
+
+            return model;
+            //rootPage.NotifyUser("Package created from file.", NotifyType.StatusMessage);
+            //EnablePackageOperationButtons();
+        }
+
 
         private void CreateProgrammatically(List<Component> sceneComponents)
         {
