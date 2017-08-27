@@ -28,6 +28,8 @@
     using Windows.System;
     using Windows.UI.Xaml;
     using System.Diagnostics;
+    using ACHF;
+    using System.Collections.Generic;
 
     #endregion
 
@@ -37,6 +39,13 @@
     /// </summary>
     public class TMFConsortium3MFExt : PluginImportExport
     {
+        private struct Component
+        {
+            public CSGShape shape;
+            public CSGGroup group;
+            public Printing3DMesh mesh;
+        }
+
         private Printing3D3MFPackage currentPackage;
 
         /// <summary>
@@ -77,7 +86,7 @@
         /// <summary>
         ///   Gets a value indicating whether imports are supported.
         /// </summary>
-        public bool SupportImport => true;
+        public bool SupportImport => false;
 
         public void Export(
             string filename,
@@ -88,7 +97,8 @@
             ref int[] userDataInts,
             ref string userDataString)
         {
-            this.CreateProgrammatically();
+            var sceneComponents = this.CollectSceneComponents(group);
+            this.CreateProgrammatically(sceneComponents);
             SavePackage(filename);
         }
 
@@ -105,15 +115,15 @@
             importer.Import(importFileName, sceneGraph, importGroup);
         }
 
-        private void CreateProgrammatically()
+        private void CreateProgrammatically(List<Component> sceneComponents)
         {
-            var packagingTask = CreatePackageAsync();
+            var packagingTask = CreatePackageAsync(sceneComponents);
             packagingTask.Wait();
             currentPackage = packagingTask.Result;
         }
 
         #region Creating a package programmatically
-        private static async Task<Printing3D3MFPackage> CreatePackageAsync()
+        private static async Task<Printing3D3MFPackage> CreatePackageAsync(List<Component> sceneComponents)
         {
             var package = new Printing3D3MFPackage();
 
@@ -234,15 +244,75 @@
             #endregion
 
             #region Mesh
+            for (int itemId = 0; itemId < sceneComponents.Count; itemId++)
+            {
+                var mesh2 = sceneComponents[itemId].mesh;
+
+                CSGVector[] pointList = new CSGVector[0];
+                int pointListCount = 0;
+
+                CSGVector[] normalList = new CSGVector[0];
+                int normalListCount = 0;
+
+                CSGUV[] textureCoordinateList = new CSGUV[0];
+                int textureCoordinateListCount = 0;
+
+                CSGMaterialFaceList[] materialFaceList = new CSGMaterialFaceList[0];
+                int materialFaceListCount = 0;
+
+                sceneComponents[itemId].shape.GetGeometryMaterialSorted(true, true, true, ref pointList, ref pointListCount, ref normalList, ref normalListCount, ref textureCoordinateList, ref textureCoordinateListCount, ref materialFaceList, ref materialFaceListCount);
+
+                await SetVerticesAsync2(mesh2, pointList);
+                await SetTriangleIndicesAsync2(mesh2, materialFaceList);
+
+                model.Meshes.Add(mesh2);
+            }
+
             var mesh = new Printing3DMesh();
 
             await SetVerticesAsync(mesh);
             await SetTriangleIndicesAsync(mesh);
-            await SetMaterialIndicesAsync(mesh);
+            //await SetMaterialIndicesAsync(mesh);
 
             // add the mesh to the model
             model.Meshes.Add(mesh);
             #endregion
+
+            for (int itemId = 0; itemId < sceneComponents.Count; itemId++)
+            {
+                var item = sceneComponents[itemId];
+
+                Printing3DComponent component2 = new Printing3DComponent();
+                component2.Mesh = item.mesh;
+
+                // Add the component to the model. A model can have multiple components.
+                model.Components.Add(component2);
+
+                CSGMatrix transformLH = new CSGMatrix();
+                item.group.GetTransform(item.group.GetScene(), -1, ref transformLH);
+                var transformRH = transformLH; // ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(transformLH);
+
+                Matrix4x4 matrix = new Matrix4x4();
+                matrix.M11 = transformRH.m11;
+                matrix.M12 = transformRH.m12;
+                matrix.M13 = transformRH.m13;
+                matrix.M14 = transformRH.m14;
+                matrix.M21 = transformRH.m21;
+                matrix.M22 = transformRH.m22;
+                matrix.M23 = transformRH.m23;
+                matrix.M24 = transformRH.m24;
+                matrix.M31 = transformRH.m31;
+                matrix.M32 = transformRH.m32;
+                matrix.M33 = transformRH.m33;
+                matrix.M34 = transformRH.m34;
+                matrix.M41 = transformRH.m41;
+                matrix.M42 = transformRH.m42;
+                matrix.M43 = transformRH.m43;
+                matrix.M44 = transformRH.m44;
+                var componentWithMatrix2 = new Printing3DComponentWithMatrix() { Component = component2, Matrix = matrix };
+
+                model.Build.Components.Add(componentWithMatrix2);
+            }
 
             #region Adding a component to the build
             // create a component.
@@ -270,6 +340,23 @@
             await FixTextureContentTypeAsync(package);
 
             return package;
+        }
+
+        public static CSGMatrix ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(CSGMatrix transform)
+        {
+            // mirror each base vector's z component
+            transform.m13 *= -1;
+            transform.m23 *= -1;
+            transform.m33 *= -1;
+            transform.m43 *= -1;
+
+            // and now invert the Z base vector to keep the matrix decomposable
+            // will come out just fine when the meshes are locally mirrored as well
+            transform.m31 *= -1;
+            transform.m32 *= -1;
+            transform.m33 *= -1; // NOTE: this is inverted twice. Not sure why, but if there is a bug, this is probably it.
+            transform.m34 *= -1;
+            return transform;
         }
 
         #region Mesh buffers
@@ -307,6 +394,39 @@
             }
         }
 
+        // Create the buffer for vertex positions.
+        private static async Task SetVerticesAsync2(Printing3DMesh mesh, CSGVector[] pointList)
+        {
+            Printing3DBufferDescription description;
+            description.Format = Printing3DBufferFormat.Printing3DDouble;
+            description.Stride = 3; // Three values per vertex (x, y, z).
+            mesh.VertexPositionsDescription = description;
+            mesh.VertexCount = (uint)pointList.Length;
+
+            // Create the buffer into which we will write the vertex positions.
+            mesh.CreateVertexPositions(sizeof(double) * description.Stride * mesh.VertexCount);
+
+            // Fill the buffer with vertex coordinates.
+            using (var stream = mesh.GetVertexPositions().AsStream())
+            {
+                double[] vertices = new double[pointList.Length * 3];
+                int verticesLocation = 0;
+                foreach (var point in pointList)
+                {
+                    vertices[verticesLocation] = point.X;
+                    verticesLocation++;
+                    vertices[verticesLocation] = point.Y;
+                    verticesLocation++;
+                    vertices[verticesLocation] = point.Z;
+                    verticesLocation++;
+                }
+
+                byte[] vertexData = vertices.SelectMany(v => BitConverter.GetBytes(v)).ToArray();
+
+                await stream.WriteAsync(vertexData, 0, vertexData.Length);
+            }
+        }
+
         // Create the buffer for triangle indices.
         private static async Task SetTriangleIndicesAsync(Printing3DMesh mesh)
         {
@@ -337,6 +457,48 @@
                     6, 5, 7,
                     4, 5, 6,
                 };
+
+                var vertexData = indices.SelectMany(v => BitConverter.GetBytes(v)).ToArray();
+                await stream.WriteAsync(vertexData, 0, vertexData.Length);
+            }
+        }
+
+        // Create the buffer for triangle indices.
+        private static async Task SetTriangleIndicesAsync2(Printing3DMesh mesh, CSGMaterialFaceList[] materialFaceList)
+        {
+            uint triangleCount = 0;
+            foreach (var material in materialFaceList)
+            {
+                triangleCount += (uint)material.FaceListCount;
+            }
+
+            Printing3DBufferDescription description;
+            description.Format = Printing3DBufferFormat.Printing3DUInt;
+            description.Stride = 3; // 3 vertex position indices per triangle
+            mesh.IndexCount = triangleCount;
+            mesh.TriangleIndicesDescription = description;
+
+            // Create the buffer into which we will write the triangle vertex indices.
+            mesh.CreateTriangleIndices(sizeof(UInt32) * description.Stride * mesh.IndexCount);
+
+            // Fill the buffer with triangle vertex indices.
+            using (var stream = mesh.GetTriangleIndices().AsStream())
+            {
+                UInt32[] indices = new UInt32[triangleCount * 3];
+
+                int indicesLocation = 0;
+                foreach (var material in materialFaceList)
+                {
+                    foreach (var face in material.FaceList)
+                    {
+                        indices[indicesLocation] = (uint)face.PointList[0].PointID;
+                        indicesLocation++;
+                        indices[indicesLocation] = (uint)face.PointList[1].PointID;
+                        indicesLocation++;
+                        indices[indicesLocation] = (uint)face.PointList[2].PointID;
+                        indicesLocation++;
+                    }
+                }
 
                 var vertexData = indices.SelectMany(v => BitConverter.GetBytes(v)).ToArray();
                 await stream.WriteAsync(vertexData, 0, vertexData.Length);
@@ -504,5 +666,300 @@
             // Update the model with the repaired XML.
             package.ModelPart = await StringToStreamAsync(xmldoc.ToString());
         }
+
+        private readonly CHFGeneral helperFunctionsGeneral = new CHFGeneral();
+
+        private readonly Dictionary<string, int> textureIdList = new Dictionary<string, int>();
+
+        //private readonly List<FBXTexture> textureList = new List<FBXTexture>();
+
+        private string[] uniqueNamesList = new string[0];
+
+        private int uniqueNamesListCount;
+
+        private List<Component> CollectSceneComponents(CSGGroup scene)
+        {
+            //Common.InitializeSdkObjects(group.Name, out FBXManager managerInstance, out FBXScene fbxScene);
+
+            //FBXAnimStack myAnimStack = FBXAnimStack.Create(fbxScene, group.Name + " Animation Stack");
+            //FBXAnimLayer myAnimBaseLayer = FBXAnimLayer.Create(fbxScene, "Layer0");
+            //myAnimStack.AddMember(myAnimBaseLayer);
+
+            //var node = fbxScene.GetRootNode();
+
+            var shapeList = new List<Component>();
+            this.RenameMeCollectGroupShapesRecursively(scene, shapeList);
+
+            //int fileFormat = -1;
+            //if (string.Equals(Path.GetExtension(fileName), ".fbx", StringComparison.InvariantCultureIgnoreCase))
+            //{
+            //    fileFormat = 1; // force text export for fbx
+            //}
+
+            //Common.SaveScene(managerInstance, fbxScene, fileName, fileFormat);
+            return shapeList;
+        }
+
+        private static void ConvertTextureCoordinate(CSGUV[] textureCoordinateList, CSGVectorLong point)
+        {
+            if (textureCoordinateList[point.Z].V > 1)
+            {
+                textureCoordinateList[point.Z].V *= -1;
+                textureCoordinateList[point.Z].V += 1;
+            }
+
+            textureCoordinateList[point.Z].V *= -1;
+            textureCoordinateList[point.Z].V += 1;
+        }
+
+        private void RenameMeCollectGroupShapesRecursively(CSGGroup group, List<Component> sceneShapeList)
+        {
+            this.RenameMeCollectGroupShapes(group, sceneShapeList);
+
+            CSGGroupArray childGroupList = group.GetChildren();
+            for (int groupIndex = 0; groupIndex < childGroupList.GetSize(); groupIndex++)
+            {
+                this.RenameMeCollectGroupShapesRecursively(childGroupList.GetElement(groupIndex), sceneShapeList);
+            }
+        }
+
+        private void RenameMeCollectGroupShapes(CSGGroup group, List<Component> sceneShapeList)
+        {
+            CSGShapeArray childShapeList = group.GetShapes();
+            for (int shapeIndex = 0; shapeIndex < childShapeList.GetSize(); shapeIndex++)
+            {
+                var shape = childShapeList.GetElement(shapeIndex);
+                if (shape.RepresentativeEntityType == CSGEntityType.CSGEShape && shape.ShapeType == CSGShapeType.CSGShapeStandard && shape.GetFaceCount() > 0)
+                {
+                    var component = new Component();
+                    component.shape = shape;
+                    component.group = group;
+                    component.mesh = new Printing3DMesh();
+                    sceneShapeList.Add(component);
+                }
+            }
+        }
+
+//        private void ExportMaterial(FBXScene fbxScene, FBXNode fbxNode, CSGMaterial material)
+//        {
+//            string materialName = this.GetUniqueName("material", "material");
+
+//            FBXSurfacePhong fbxMaterial = FBXSurfacePhong.Create(fbxScene, materialName);
+
+//            var diffuse = material.get_Diffuse();
+//            fbxMaterial.SetDiffuse(diffuse.r, diffuse.g, diffuse.b);
+//            fbxMaterial.SetTransparencyFactor(diffuse.a);
+
+//            var ambient = material.get_Ambient();
+//            fbxMaterial.SetAmbient(ambient.r, ambient.g, ambient.b);
+
+//            var emissive = material.get_Emissive();
+//            fbxMaterial.SetEmissive(emissive.r, emissive.g, emissive.b);
+
+//            var specular = material.get_Specular();
+//            fbxMaterial.SetSpecular(specular.r, specular.g, specular.b);
+//            fbxMaterial.SetSpecularFactor(.1);
+
+//            fbxMaterial.SetShadingModel("Phong");
+//            fbxMaterial.SetShininess(0.0);
+
+//            fbxNode.AddMaterial(fbxMaterial);
+
+//            if (material.Texture != null)
+//            {
+//#if IS_3DC9
+//                var textureFileName = Path.GetFileName(material.Texture.TextureName);
+//#else
+//                var textureFileName = Path.GetFileName(material.Texture.Texture0Name);
+//#endif
+//                if (!string.IsNullOrWhiteSpace(textureFileName))
+//                {
+//                    if (!this.textureIdList.TryGetValue(textureFileName, out int textureId))
+//                    {
+//                        textureId = this.textureIdList.Count;
+
+//                        this.textureIdList.Add(textureFileName, textureId);
+
+//                        string textureName = this.GetUniqueName(Path.GetFileNameWithoutExtension(textureFileName), "texture");
+
+//                        FBXFileTexture fbxFileTexture = FBXFileTexture.Create(fbxScene, textureName);
+//                        fbxFileTexture.SetFileName(textureFileName);
+//                        fbxFileTexture.SetTextureUse(ArcManagedFBX.Types.ETextureUse.eStandard);
+//                        fbxFileTexture.SetMappingType(ArcManagedFBX.Types.EMappingType.eUV);
+//                        fbxFileTexture.SetMaterialUse(ArcManagedFBX.Types.EMaterialUse.eModelMaterial);
+//                        fbxFileTexture.SetSwapUV(false);
+//                        fbxFileTexture.SetTranslation(0.0, 0.0);
+//                        fbxFileTexture.SetScale(1.0, 1.0);
+//                        fbxFileTexture.SetRotation(0.0, 0.0);
+
+//                        this.textureList.Add(fbxFileTexture);
+//                    }
+
+//                    fbxMaterial.DiffuseConnectSrcObjectHelper(this.textureList[textureId]);
+//                }
+//            }
+//        }
+
+//        private void ExportShape(FBXScene fbxScene, FBXNode parentNode, CSGShape shape)
+//        {
+//            Dictionary<long, int> fbxPointIdList = new Dictionary<long, int>();
+//            List<CSGVectorLong> fbxPointList = new List<CSGVectorLong>();
+
+//            CSGVector[] pointList = null;
+//            int pointListCount = 0;
+//            CSGVector[] normalList = null;
+//            int normalListCount = 0;
+//            CSGUV[] textureCoordinateList = null;
+//            int textureCoordinateListCount = 0;
+//            CSGMaterialFaceList[] materialFaceList = null;
+//            int materialFaceListCount = 0;
+//            shape.GetGeometryMaterialSorted(
+//                true,
+//                false,
+//                true,
+//                ref pointList,
+//                ref pointListCount,
+//                ref normalList,
+//                ref normalListCount,
+//                ref textureCoordinateList,
+//                ref textureCoordinateListCount,
+//                ref materialFaceList,
+//                ref materialFaceListCount);
+
+//            foreach (var material in materialFaceList)
+//            {
+//                this.ExportMaterial(fbxScene, parentNode, material.Material);
+//                foreach (var face in material.FaceList)
+//                {
+//                    foreach (var facePoint in face.PointList)
+//                    {
+//                        long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
+//                        CSGVectorLong fbxPoint;
+//                        if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
+//                        {
+//                            fbxPoint = fbxPointList[fbxPointId];
+//                        }
+//                        else
+//                        {
+//                            fbxPoint = new CSGVectorLong() { X = facePoint.PointID, Y = facePoint.NormalID, Z = facePoint.TextureCoordinateListID[0] };
+//                            fbxPointId = fbxPointList.Count;
+
+//                            fbxPointList.Add(fbxPoint);
+
+//                            fbxPointIdList.Add(fbxPointKey, fbxPointId);
+//                        }
+//                    }
+//                }
+//            }
+
+//            string shapeName = this.GetUniqueName(shape.Name, "shape");
+
+//            FBXMesh fbxMesh = FBXMesh.Create(fbxScene, shapeName);
+//            parentNode.AddNodeAttribute(fbxMesh);
+
+//            fbxMesh.InitControlPoints(fbxPointIdList.Count);
+//            fbxMesh.InitMaterialIndices(ArcManagedFBX.Types.EMappingMode.eByPolygon);
+//            fbxMesh.InitNormals(fbxPointIdList.Count);
+//            fbxMesh.InitTextureUV(0);
+//            fbxMesh.InitTextureUVIndices(ArcManagedFBX.Types.EMappingMode.eByControlPoint);
+
+//            int id = 0;
+//            foreach (var point in fbxPointList)
+//            {
+//                FBXVector controlPoint = new FBXVector(pointList[point.X].X, pointList[point.X].Y, -pointList[point.X].Z);
+//                fbxMesh.SetControlPointAt(controlPoint, id);
+
+//                FBXVector normal = new FBXVector(normalList[point.Y].X, normalList[point.Y].Y, -normalList[point.Y].Z);
+//                fbxMesh.SetControlPointNormalAt(normal, id);
+
+//                ConvertTextureCoordinate(textureCoordinateList, point);
+
+//                fbxMesh.AddTextureUV(new FBXVector2(textureCoordinateList[point.Z].U, textureCoordinateList[point.Z].V));
+
+//                id++;
+//            }
+
+//            int materialId = 0;
+//            foreach (var material in materialFaceList)
+//            {
+//                foreach (var face in material.FaceList)
+//                {
+//                    fbxMesh.BeginPolygon(materialId, -1, -1, true);
+//                    foreach (var facePoint in face.PointList.Reverse())
+//                    {
+//                        long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
+//                        if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
+//                        {
+//                            fbxMesh.AddPolygon(fbxPointId, fbxPointId);
+//                        }
+//                        else
+//                        {
+//                            // should never happen
+//                            Debug.WriteLine("what to do for the impossible?");
+//                            fbxMesh.AddPolygon(0, 0);
+//                        }
+//                    }
+
+//                    fbxMesh.EndPolygon();
+//                }
+
+//                materialId++;
+//            }
+//        }
+
+//        private FBXVector GetEulerXYZ(CSGGroup group, float time)
+//        {
+//            CSGMatrix transformLH = new CSGMatrix();
+//            group.GetTransform(group.Parent, time, ref transformLH);
+
+//            var transformRH = Common.ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(transformLH);
+
+//            FBXMatrix matrix = new FBXMatrix(
+//                transformRH.m11,
+//                transformRH.m12,
+//                transformRH.m13,
+//                transformRH.m14,
+//                transformRH.m21,
+//                transformRH.m22,
+//                transformRH.m23,
+//                transformRH.m24,
+//                transformRH.m31,
+//                transformRH.m32,
+//                transformRH.m33,
+//                transformRH.m34,
+//                transformRH.m41,
+//                transformRH.m42,
+//                transformRH.m43,
+//                transformRH.m44);
+//            FBXQuaternion fbxQuaternionRH = matrix.GetQuaternion();
+
+//            var eulerXYZRH = fbxQuaternionRH.DecomposeSphericalXYZ();
+//            return eulerXYZRH;
+//        }
+
+//        private string GetUniqueName(string name, string defaultName)
+//        {
+//            string uniqueName = name;
+//            if (string.IsNullOrWhiteSpace(uniqueName))
+//            {
+//                uniqueName = defaultName;
+//            }
+
+//            this.helperFunctionsGeneral.MakeNameUnique(ref uniqueName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
+//            return uniqueName;
+//        }
+
+//        private void SetTransform(CSGGroup group, FBXNode node)
+//        {
+//            CSGVector position = new CSGVector();
+//            group.GetPosition(group.Parent, -1, ref position);
+
+//            position.Z *= -1;
+//            node.LclTranslationSet(new FBXVector(position.X, position.Y, position.Z));
+
+//            FBXVector eulerXYZRH = this.GetEulerXYZ(group, -1);
+
+//            node.LclRotationSet(new FBXVector(eulerXYZRH.x, eulerXYZRH.y, eulerXYZRH.z));
+//        }
     }
 }
