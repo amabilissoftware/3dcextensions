@@ -161,12 +161,12 @@
 
                 CSGGroup group = sceneGraph.CreateGroup(importGroup);
                 group.SetTransform(group.GetScene(), -1, transform);
-                group.Name = "Group-" + meshId.ToString();
+                group.Name = "Group-" + component.Component.Name;
 
                 var mesh = component.Component.Mesh;
 
                 CSGShape shape = sceneGraph.CreateShape();
-                shape.Name = "Mesh-" + meshId.ToString();
+                shape.Name = component.Component.Name;
                 group.AddShape(shape);
 
                 CSGMaterial[] materialList = new CSGMaterial[1];
@@ -298,7 +298,7 @@
         }
 
         #region Creating a package programmatically
-        private static async Task<Printing3D3MFPackage> CreatePackageAsync(List<Component> sceneComponents)
+        private async Task<Printing3D3MFPackage> CreatePackageAsync(List<Component> sceneComponents)
         {
             var package = new Printing3D3MFPackage();
 
@@ -460,6 +460,9 @@
                 Printing3DComponent component2 = new Printing3DComponent();
                 component2.Mesh = item.mesh;
 
+                string componentName = GetUniqueName(item.shape.Name, "shape");
+                component2.Name = componentName;
+
                 // Add the component to the model. A model can have multiple components.
                 model.Components.Add(component2);
 
@@ -515,23 +518,6 @@
             await FixTextureContentTypeAsync(package);
 
             return package;
-        }
-
-        public static CSGMatrix ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(CSGMatrix transform)
-        {
-            // mirror each base vector's z component
-            transform.m13 *= -1;
-            transform.m23 *= -1;
-            transform.m33 *= -1;
-            transform.m43 *= -1;
-
-            // and now invert the Z base vector to keep the matrix decomposable
-            // will come out just fine when the meshes are locally mirrored as well
-            transform.m31 *= -1;
-            transform.m32 *= -1;
-            transform.m33 *= -1; // NOTE: this is inverted twice. Not sure why, but if there is a bug, this is probably it.
-            transform.m34 *= -1;
-            return transform;
         }
 
         #region Mesh buffers
@@ -916,226 +902,226 @@
             }
         }
 
-//        private void ExportMaterial(FBXScene fbxScene, FBXNode fbxNode, CSGMaterial material)
-//        {
-//            string materialName = this.GetUniqueName("material", "material");
+        //        private void ExportMaterial(FBXScene fbxScene, FBXNode fbxNode, CSGMaterial material)
+        //        {
+        //            string materialName = this.GetUniqueName("material", "material");
 
-//            FBXSurfacePhong fbxMaterial = FBXSurfacePhong.Create(fbxScene, materialName);
+        //            FBXSurfacePhong fbxMaterial = FBXSurfacePhong.Create(fbxScene, materialName);
 
-//            var diffuse = material.get_Diffuse();
-//            fbxMaterial.SetDiffuse(diffuse.r, diffuse.g, diffuse.b);
-//            fbxMaterial.SetTransparencyFactor(diffuse.a);
+        //            var diffuse = material.get_Diffuse();
+        //            fbxMaterial.SetDiffuse(diffuse.r, diffuse.g, diffuse.b);
+        //            fbxMaterial.SetTransparencyFactor(diffuse.a);
 
-//            var ambient = material.get_Ambient();
-//            fbxMaterial.SetAmbient(ambient.r, ambient.g, ambient.b);
+        //            var ambient = material.get_Ambient();
+        //            fbxMaterial.SetAmbient(ambient.r, ambient.g, ambient.b);
 
-//            var emissive = material.get_Emissive();
-//            fbxMaterial.SetEmissive(emissive.r, emissive.g, emissive.b);
+        //            var emissive = material.get_Emissive();
+        //            fbxMaterial.SetEmissive(emissive.r, emissive.g, emissive.b);
 
-//            var specular = material.get_Specular();
-//            fbxMaterial.SetSpecular(specular.r, specular.g, specular.b);
-//            fbxMaterial.SetSpecularFactor(.1);
+        //            var specular = material.get_Specular();
+        //            fbxMaterial.SetSpecular(specular.r, specular.g, specular.b);
+        //            fbxMaterial.SetSpecularFactor(.1);
 
-//            fbxMaterial.SetShadingModel("Phong");
-//            fbxMaterial.SetShininess(0.0);
+        //            fbxMaterial.SetShadingModel("Phong");
+        //            fbxMaterial.SetShininess(0.0);
 
-//            fbxNode.AddMaterial(fbxMaterial);
+        //            fbxNode.AddMaterial(fbxMaterial);
 
-//            if (material.Texture != null)
-//            {
-//#if IS_3DC9
-//                var textureFileName = Path.GetFileName(material.Texture.TextureName);
-//#else
-//                var textureFileName = Path.GetFileName(material.Texture.Texture0Name);
-//#endif
-//                if (!string.IsNullOrWhiteSpace(textureFileName))
-//                {
-//                    if (!this.textureIdList.TryGetValue(textureFileName, out int textureId))
-//                    {
-//                        textureId = this.textureIdList.Count;
+        //            if (material.Texture != null)
+        //            {
+        //#if IS_3DC9
+        //                var textureFileName = Path.GetFileName(material.Texture.TextureName);
+        //#else
+        //                var textureFileName = Path.GetFileName(material.Texture.Texture0Name);
+        //#endif
+        //                if (!string.IsNullOrWhiteSpace(textureFileName))
+        //                {
+        //                    if (!this.textureIdList.TryGetValue(textureFileName, out int textureId))
+        //                    {
+        //                        textureId = this.textureIdList.Count;
 
-//                        this.textureIdList.Add(textureFileName, textureId);
+        //                        this.textureIdList.Add(textureFileName, textureId);
 
-//                        string textureName = this.GetUniqueName(Path.GetFileNameWithoutExtension(textureFileName), "texture");
+        //                        string textureName = this.GetUniqueName(Path.GetFileNameWithoutExtension(textureFileName), "texture");
 
-//                        FBXFileTexture fbxFileTexture = FBXFileTexture.Create(fbxScene, textureName);
-//                        fbxFileTexture.SetFileName(textureFileName);
-//                        fbxFileTexture.SetTextureUse(ArcManagedFBX.Types.ETextureUse.eStandard);
-//                        fbxFileTexture.SetMappingType(ArcManagedFBX.Types.EMappingType.eUV);
-//                        fbxFileTexture.SetMaterialUse(ArcManagedFBX.Types.EMaterialUse.eModelMaterial);
-//                        fbxFileTexture.SetSwapUV(false);
-//                        fbxFileTexture.SetTranslation(0.0, 0.0);
-//                        fbxFileTexture.SetScale(1.0, 1.0);
-//                        fbxFileTexture.SetRotation(0.0, 0.0);
+        //                        FBXFileTexture fbxFileTexture = FBXFileTexture.Create(fbxScene, textureName);
+        //                        fbxFileTexture.SetFileName(textureFileName);
+        //                        fbxFileTexture.SetTextureUse(ArcManagedFBX.Types.ETextureUse.eStandard);
+        //                        fbxFileTexture.SetMappingType(ArcManagedFBX.Types.EMappingType.eUV);
+        //                        fbxFileTexture.SetMaterialUse(ArcManagedFBX.Types.EMaterialUse.eModelMaterial);
+        //                        fbxFileTexture.SetSwapUV(false);
+        //                        fbxFileTexture.SetTranslation(0.0, 0.0);
+        //                        fbxFileTexture.SetScale(1.0, 1.0);
+        //                        fbxFileTexture.SetRotation(0.0, 0.0);
 
-//                        this.textureList.Add(fbxFileTexture);
-//                    }
+        //                        this.textureList.Add(fbxFileTexture);
+        //                    }
 
-//                    fbxMaterial.DiffuseConnectSrcObjectHelper(this.textureList[textureId]);
-//                }
-//            }
-//        }
+        //                    fbxMaterial.DiffuseConnectSrcObjectHelper(this.textureList[textureId]);
+        //                }
+        //            }
+        //        }
 
-//        private void ExportShape(FBXScene fbxScene, FBXNode parentNode, CSGShape shape)
-//        {
-//            Dictionary<long, int> fbxPointIdList = new Dictionary<long, int>();
-//            List<CSGVectorLong> fbxPointList = new List<CSGVectorLong>();
+        //        private void ExportShape(FBXScene fbxScene, FBXNode parentNode, CSGShape shape)
+        //        {
+        //            Dictionary<long, int> fbxPointIdList = new Dictionary<long, int>();
+        //            List<CSGVectorLong> fbxPointList = new List<CSGVectorLong>();
 
-//            CSGVector[] pointList = null;
-//            int pointListCount = 0;
-//            CSGVector[] normalList = null;
-//            int normalListCount = 0;
-//            CSGUV[] textureCoordinateList = null;
-//            int textureCoordinateListCount = 0;
-//            CSGMaterialFaceList[] materialFaceList = null;
-//            int materialFaceListCount = 0;
-//            shape.GetGeometryMaterialSorted(
-//                true,
-//                false,
-//                true,
-//                ref pointList,
-//                ref pointListCount,
-//                ref normalList,
-//                ref normalListCount,
-//                ref textureCoordinateList,
-//                ref textureCoordinateListCount,
-//                ref materialFaceList,
-//                ref materialFaceListCount);
+        //            CSGVector[] pointList = null;
+        //            int pointListCount = 0;
+        //            CSGVector[] normalList = null;
+        //            int normalListCount = 0;
+        //            CSGUV[] textureCoordinateList = null;
+        //            int textureCoordinateListCount = 0;
+        //            CSGMaterialFaceList[] materialFaceList = null;
+        //            int materialFaceListCount = 0;
+        //            shape.GetGeometryMaterialSorted(
+        //                true,
+        //                false,
+        //                true,
+        //                ref pointList,
+        //                ref pointListCount,
+        //                ref normalList,
+        //                ref normalListCount,
+        //                ref textureCoordinateList,
+        //                ref textureCoordinateListCount,
+        //                ref materialFaceList,
+        //                ref materialFaceListCount);
 
-//            foreach (var material in materialFaceList)
-//            {
-//                this.ExportMaterial(fbxScene, parentNode, material.Material);
-//                foreach (var face in material.FaceList)
-//                {
-//                    foreach (var facePoint in face.PointList)
-//                    {
-//                        long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
-//                        CSGVectorLong fbxPoint;
-//                        if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
-//                        {
-//                            fbxPoint = fbxPointList[fbxPointId];
-//                        }
-//                        else
-//                        {
-//                            fbxPoint = new CSGVectorLong() { X = facePoint.PointID, Y = facePoint.NormalID, Z = facePoint.TextureCoordinateListID[0] };
-//                            fbxPointId = fbxPointList.Count;
+        //            foreach (var material in materialFaceList)
+        //            {
+        //                this.ExportMaterial(fbxScene, parentNode, material.Material);
+        //                foreach (var face in material.FaceList)
+        //                {
+        //                    foreach (var facePoint in face.PointList)
+        //                    {
+        //                        long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
+        //                        CSGVectorLong fbxPoint;
+        //                        if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
+        //                        {
+        //                            fbxPoint = fbxPointList[fbxPointId];
+        //                        }
+        //                        else
+        //                        {
+        //                            fbxPoint = new CSGVectorLong() { X = facePoint.PointID, Y = facePoint.NormalID, Z = facePoint.TextureCoordinateListID[0] };
+        //                            fbxPointId = fbxPointList.Count;
 
-//                            fbxPointList.Add(fbxPoint);
+        //                            fbxPointList.Add(fbxPoint);
 
-//                            fbxPointIdList.Add(fbxPointKey, fbxPointId);
-//                        }
-//                    }
-//                }
-//            }
+        //                            fbxPointIdList.Add(fbxPointKey, fbxPointId);
+        //                        }
+        //                    }
+        //                }
+        //            }
 
-//            string shapeName = this.GetUniqueName(shape.Name, "shape");
+        //            string shapeName = this.GetUniqueName(shape.Name, "shape");
 
-//            FBXMesh fbxMesh = FBXMesh.Create(fbxScene, shapeName);
-//            parentNode.AddNodeAttribute(fbxMesh);
+        //            FBXMesh fbxMesh = FBXMesh.Create(fbxScene, shapeName);
+        //            parentNode.AddNodeAttribute(fbxMesh);
 
-//            fbxMesh.InitControlPoints(fbxPointIdList.Count);
-//            fbxMesh.InitMaterialIndices(ArcManagedFBX.Types.EMappingMode.eByPolygon);
-//            fbxMesh.InitNormals(fbxPointIdList.Count);
-//            fbxMesh.InitTextureUV(0);
-//            fbxMesh.InitTextureUVIndices(ArcManagedFBX.Types.EMappingMode.eByControlPoint);
+        //            fbxMesh.InitControlPoints(fbxPointIdList.Count);
+        //            fbxMesh.InitMaterialIndices(ArcManagedFBX.Types.EMappingMode.eByPolygon);
+        //            fbxMesh.InitNormals(fbxPointIdList.Count);
+        //            fbxMesh.InitTextureUV(0);
+        //            fbxMesh.InitTextureUVIndices(ArcManagedFBX.Types.EMappingMode.eByControlPoint);
 
-//            int id = 0;
-//            foreach (var point in fbxPointList)
-//            {
-//                FBXVector controlPoint = new FBXVector(pointList[point.X].X, pointList[point.X].Y, -pointList[point.X].Z);
-//                fbxMesh.SetControlPointAt(controlPoint, id);
+        //            int id = 0;
+        //            foreach (var point in fbxPointList)
+        //            {
+        //                FBXVector controlPoint = new FBXVector(pointList[point.X].X, pointList[point.X].Y, -pointList[point.X].Z);
+        //                fbxMesh.SetControlPointAt(controlPoint, id);
 
-//                FBXVector normal = new FBXVector(normalList[point.Y].X, normalList[point.Y].Y, -normalList[point.Y].Z);
-//                fbxMesh.SetControlPointNormalAt(normal, id);
+        //                FBXVector normal = new FBXVector(normalList[point.Y].X, normalList[point.Y].Y, -normalList[point.Y].Z);
+        //                fbxMesh.SetControlPointNormalAt(normal, id);
 
-//                ConvertTextureCoordinate(textureCoordinateList, point);
+        //                ConvertTextureCoordinate(textureCoordinateList, point);
 
-//                fbxMesh.AddTextureUV(new FBXVector2(textureCoordinateList[point.Z].U, textureCoordinateList[point.Z].V));
+        //                fbxMesh.AddTextureUV(new FBXVector2(textureCoordinateList[point.Z].U, textureCoordinateList[point.Z].V));
 
-//                id++;
-//            }
+        //                id++;
+        //            }
 
-//            int materialId = 0;
-//            foreach (var material in materialFaceList)
-//            {
-//                foreach (var face in material.FaceList)
-//                {
-//                    fbxMesh.BeginPolygon(materialId, -1, -1, true);
-//                    foreach (var facePoint in face.PointList.Reverse())
-//                    {
-//                        long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
-//                        if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
-//                        {
-//                            fbxMesh.AddPolygon(fbxPointId, fbxPointId);
-//                        }
-//                        else
-//                        {
-//                            // should never happen
-//                            Debug.WriteLine("what to do for the impossible?");
-//                            fbxMesh.AddPolygon(0, 0);
-//                        }
-//                    }
+        //            int materialId = 0;
+        //            foreach (var material in materialFaceList)
+        //            {
+        //                foreach (var face in material.FaceList)
+        //                {
+        //                    fbxMesh.BeginPolygon(materialId, -1, -1, true);
+        //                    foreach (var facePoint in face.PointList.Reverse())
+        //                    {
+        //                        long fbxPointKey = ((long)facePoint.PointID << 42) | ((long)facePoint.NormalID << 21) | (long)facePoint.TextureCoordinateListID[0];
+        //                        if (fbxPointIdList.TryGetValue(fbxPointKey, out int fbxPointId))
+        //                        {
+        //                            fbxMesh.AddPolygon(fbxPointId, fbxPointId);
+        //                        }
+        //                        else
+        //                        {
+        //                            // should never happen
+        //                            Debug.WriteLine("what to do for the impossible?");
+        //                            fbxMesh.AddPolygon(0, 0);
+        //                        }
+        //                    }
 
-//                    fbxMesh.EndPolygon();
-//                }
+        //                    fbxMesh.EndPolygon();
+        //                }
 
-//                materialId++;
-//            }
-//        }
+        //                materialId++;
+        //            }
+        //        }
 
-//        private FBXVector GetEulerXYZ(CSGGroup group, float time)
-//        {
-//            CSGMatrix transformLH = new CSGMatrix();
-//            group.GetTransform(group.Parent, time, ref transformLH);
+        //        private FBXVector GetEulerXYZ(CSGGroup group, float time)
+        //        {
+        //            CSGMatrix transformLH = new CSGMatrix();
+        //            group.GetTransform(group.Parent, time, ref transformLH);
 
-//            var transformRH = Common.ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(transformLH);
+        //            var transformRH = Common.ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(transformLH);
 
-//            FBXMatrix matrix = new FBXMatrix(
-//                transformRH.m11,
-//                transformRH.m12,
-//                transformRH.m13,
-//                transformRH.m14,
-//                transformRH.m21,
-//                transformRH.m22,
-//                transformRH.m23,
-//                transformRH.m24,
-//                transformRH.m31,
-//                transformRH.m32,
-//                transformRH.m33,
-//                transformRH.m34,
-//                transformRH.m41,
-//                transformRH.m42,
-//                transformRH.m43,
-//                transformRH.m44);
-//            FBXQuaternion fbxQuaternionRH = matrix.GetQuaternion();
+        //            FBXMatrix matrix = new FBXMatrix(
+        //                transformRH.m11,
+        //                transformRH.m12,
+        //                transformRH.m13,
+        //                transformRH.m14,
+        //                transformRH.m21,
+        //                transformRH.m22,
+        //                transformRH.m23,
+        //                transformRH.m24,
+        //                transformRH.m31,
+        //                transformRH.m32,
+        //                transformRH.m33,
+        //                transformRH.m34,
+        //                transformRH.m41,
+        //                transformRH.m42,
+        //                transformRH.m43,
+        //                transformRH.m44);
+        //            FBXQuaternion fbxQuaternionRH = matrix.GetQuaternion();
 
-//            var eulerXYZRH = fbxQuaternionRH.DecomposeSphericalXYZ();
-//            return eulerXYZRH;
-//        }
+        //            var eulerXYZRH = fbxQuaternionRH.DecomposeSphericalXYZ();
+        //            return eulerXYZRH;
+        //        }
 
-//        private string GetUniqueName(string name, string defaultName)
-//        {
-//            string uniqueName = name;
-//            if (string.IsNullOrWhiteSpace(uniqueName))
-//            {
-//                uniqueName = defaultName;
-//            }
+        private string GetUniqueName(string name, string defaultName)
+        {
+            string uniqueName = name;
+            if (string.IsNullOrWhiteSpace(uniqueName))
+            {
+                uniqueName = defaultName;
+            }
 
-//            this.helperFunctionsGeneral.MakeNameUnique(ref uniqueName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
-//            return uniqueName;
-//        }
+            this.helperFunctionsGeneral.MakeNameUnique(ref uniqueName, ref this.uniqueNamesList, ref this.uniqueNamesListCount);
+            return uniqueName;
+        }
 
-//        private void SetTransform(CSGGroup group, FBXNode node)
-//        {
-//            CSGVector position = new CSGVector();
-//            group.GetPosition(group.Parent, -1, ref position);
+        //        private void SetTransform(CSGGroup group, FBXNode node)
+        //        {
+        //            CSGVector position = new CSGVector();
+        //            group.GetPosition(group.Parent, -1, ref position);
 
-//            position.Z *= -1;
-//            node.LclTranslationSet(new FBXVector(position.X, position.Y, position.Z));
+        //            position.Z *= -1;
+        //            node.LclTranslationSet(new FBXVector(position.X, position.Y, position.Z));
 
-//            FBXVector eulerXYZRH = this.GetEulerXYZ(group, -1);
+        //            FBXVector eulerXYZRH = this.GetEulerXYZ(group, -1);
 
-//            node.LclRotationSet(new FBXVector(eulerXYZRH.x, eulerXYZRH.y, eulerXYZRH.z));
-//        }
+        //            node.LclRotationSet(new FBXVector(eulerXYZRH.x, eulerXYZRH.y, eulerXYZRH.z));
+        //        }
     }
 }
