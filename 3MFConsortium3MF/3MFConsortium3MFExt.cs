@@ -97,8 +97,9 @@
             ref int[] userDataInts,
             ref string userDataString)
         {
-            CSGGroup origin = sceneGraph.CreateGroup(null);
 
+            // reorient the result
+            CSGGroup origin = sceneGraph.CreateGroup(null);
             origin.AddChild(group);
             CSGVector axis = new CSGVector();
             axis.X = -1;
@@ -297,28 +298,27 @@
                 // Add the component to the model. A model can have multiple components.
                 model.Components.Add(component2);
 
-                CSGMatrix transformLH = new CSGMatrix();
-                item.group.GetTransform(item.group.GetScene(), -1, ref transformLH);
-                var transformRH = transformLH; // ConvertTransformLeftHandedToRightHandedAndBack_ThisLittleBitTookFourDaysToFigureOut(transformLH);
-                Console.WriteLine(item.group.id);
-                Debug.WriteLine(item.group.id);
+                CSGMatrix transform = new CSGMatrix();
+                item.group.GetTransform(item.group.GetScene(), -1, ref transform);
+
+                // use magic to change it to 3MF's format handedness
                 Matrix4x4 matrix = new Matrix4x4();
-                matrix.M11 = transformRH.m11;
-                matrix.M12 = transformRH.m31;
-                matrix.M13 = -transformRH.m21;
-                matrix.M14 = transformRH.m41;
-                matrix.M21 = transformRH.m12;
-                matrix.M22 = transformRH.m32;
-                matrix.M23 = -transformRH.m22;
-                matrix.M24 = transformRH.m42;
-                matrix.M31 = -transformRH.m13;
-                matrix.M32 = -transformRH.m33;
-                matrix.M33 = transformRH.m23;
-                matrix.M34 = -transformRH.m43;
-                matrix.M41 = transformRH.m14;
-                matrix.M42 = transformRH.m34;
-                matrix.M43 = -transformRH.m24;
-                matrix.M44 = transformRH.m44;
+                matrix.M11 = transform.m11;
+                matrix.M12 = transform.m31;
+                matrix.M13 = -transform.m21;
+                matrix.M14 = transform.m41;
+                matrix.M21 = transform.m12;
+                matrix.M22 = transform.m32;
+                matrix.M23 = -transform.m22;
+                matrix.M24 = transform.m42;
+                matrix.M31 = -transform.m13;
+                matrix.M32 = -transform.m33;
+                matrix.M33 = transform.m23;
+                matrix.M34 = -transform.m43;
+                matrix.M41 = transform.m14;
+                matrix.M42 = transform.m34;
+                matrix.M43 = -transform.m24;
+                matrix.M44 = transform.m44;
                 var componentWithMatrix2 = new Printing3DComponentWithMatrix() { Component = component2, Matrix = matrix };
 
                 model.Build.Components.Add(componentWithMatrix2);
@@ -421,6 +421,7 @@
             {
                 double[] vertices = new double[pointList.Length * 3];
                 int verticesLocation = 0;
+                //copy points using magic to change it to 3MF's format handedness
                 foreach (var point in pointList)
                 {
                     vertices[verticesLocation] = point.X;
